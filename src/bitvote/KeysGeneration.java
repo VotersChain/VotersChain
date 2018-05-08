@@ -4,6 +4,7 @@ package bitvote;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
+import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
 
 /**
@@ -19,6 +20,7 @@ public final class KeysGeneration
 	
 	public KeyPair generateKeys()
 	{
+		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 		try
 		{
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA","BC");
