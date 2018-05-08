@@ -6,6 +6,7 @@
 package bitvote;
 
 import java.security.Key;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -28,6 +29,11 @@ public class StringUtils {
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
+        public long generateNonce(){
+            SecureRandom sc = new SecureRandom();
+            long nonce = sc.nextLong();
+            return nonce;
+        }
         
         /*public static String getMerkleRoot(ArrayList<Transaction> transactions) {
             int count = transactions.size();
