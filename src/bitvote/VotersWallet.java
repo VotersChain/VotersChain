@@ -14,16 +14,33 @@ import java.security.PublicKey;
  * @author jferr
  */
 public class VotersWallet {
-    
+        public int nvotes;
 	public PrivateKey privateKey;
 	public PublicKey publicKey;
     
 	public VotersWallet()
 	{		
+                this.nvotes = 1;
 		KeyPair keyPar = new KeysGeneration().generateKeys();
 		privateKey = keyPar.getPrivate();
 		publicKey = keyPar.getPublic();	   
 	}
+        public VotersWallet(PrivateKey pvk, PublicKey puk){
+            this.nvotes = 1;
+            privateKey = pvk;
+            publicKey = puk;
+        }
+        public VotersWallet(PublicKey puk){
+            this.nvotes = 1;
+            publicKey = puk;
+        }
+        public Vote sendVote(long candidateNonce, int value) throws Exception{
+            Vote newVote= new Vote(publicKey, candidateNonce, value);
+            newVote.generateSignature(privateKey);
+            
+            return newVote;      
+        }
+        
 	
 	
 	/*
