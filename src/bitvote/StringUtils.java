@@ -29,25 +29,32 @@ public class StringUtils {
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
-        public long generateNonce(){
+        
+        public static String getStringFromSignature(byte[] SignatureBytes){
+            return Base64.getEncoder().encodeToString(SignatureBytes);
+        }
+        public static long generateNonce(){
             SecureRandom sc = new SecureRandom();
             long nonce = sc.nextLong();
+            if(nonce < 0){
+                nonce = nonce *(-1);
+            }
             return nonce;
         }
         
-        /*public static String getMerkleRoot(ArrayList<Transaction> transactions) {
-            int count = transactions.size();
+        public static String getMerkleRoot(ArrayList<Vote> votes) {
+            int count = votes.size();
 
             List<String> previousTreeLayer = new ArrayList<String>();
-            for(Transaction transaction : transactions) {
-                    previousTreeLayer.add(transaction.transactionId);
+            for(Vote vote : votes) {
+                    previousTreeLayer.add(vote.voteId);
             }
             List<String> treeLayer = previousTreeLayer;
 
             while(count > 1) {
                     treeLayer = new ArrayList<String>();
                     for(int i=1; i < previousTreeLayer.size(); i+=2) {
-                            treeLayer.add(applySha256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
+                            treeLayer.add(HashUtils.hashFuncSHA256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
                     }
                     count = treeLayer.size();
                     previousTreeLayer = treeLayer;
@@ -55,5 +62,6 @@ public class StringUtils {
 
             String merkleRoot = (treeLayer.size() == 1) ? treeLayer.get(0) : "";
             return merkleRoot;
-	}*/
+	}
+        
 }
