@@ -43,14 +43,14 @@ public class StringUtils {
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
-        public PublicKey getPublicKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
+        public static PublicKey getPublicKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
             byte[] decodeKey = Base64.getDecoder().decode(key);
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodeKey);
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","BC");
             PublicKey pk = keyFactory.generatePublic(keySpec);
             return pk;
         }
-        public PrivateKey getPrivateKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
+        public static PrivateKey getPrivateKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
             byte[] decodeKey = Base64.getDecoder().decode(key);
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodeKey);
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","BC");
