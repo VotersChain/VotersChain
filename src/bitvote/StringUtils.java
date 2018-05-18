@@ -16,6 +16,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -52,7 +53,7 @@ public class StringUtils {
         }
         public static PrivateKey getPrivateKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
             byte[] decodeKey = Base64.getDecoder().decode(key);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodeKey);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodeKey);
             KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","BC");
             PrivateKey pk = keyFactory.generatePrivate(keySpec);
             return pk;
