@@ -51,12 +51,12 @@ public class VoteChain {
 		blockchain.add(newBlock);
 	}
 	
-	public static Boolean blockchainHadVoted(PublicKey pk) 
+	public static Boolean blockchainHadVoted(PublicKey pk, int id_eleicao) 
 	{
 		//verificação nos blocos minados
 		for (Block item : blockchain) {
 			for (Vote v : item.getData()) {
-				if (v.sender.equals(pk)) {
+				if (v.sender.equals(pk) && v.id_eleicao==id_eleicao) {
 					return true;
 				}
 			}
@@ -64,14 +64,15 @@ public class VoteChain {
 		return false;
 	}
 	
-	public static Boolean nonMinedBlockhadVoted(PublicKey pk, Block nonMinedBlock)
+	public static Boolean nonMinedBlockhadVoted(PublicKey pk, ArrayList<Vote> votes, int id_eleicao)
 	{
-		//verificação no bloco que nao foi minado ainda
-		for (Vote v : nonMinedBlock.getData()) {
-			if (v.sender.equals(pk)) {
-				return true;
-			}
-		}
+            //verificação nos votos que nao foram minados
+            if(votes.isEmpty())
+                return false;
+            for (Vote vote : votes) {
+                if(vote.sender.equals(pk) && vote.id_eleicao==id_eleicao)
+                    return true;
+            }
 		return false;
 	}
 
@@ -87,7 +88,7 @@ public class VoteChain {
 		
 		//create genesis Vote, which sends 1 vote to all wallets:
 	
-		genesisVote = new Vote(voteBase.publicKey, 000000, 1);
+		genesisVote = new Vote(voteBase.publicKey, 000000, 1, 0);
 		genesisVote.generateSignature(voteBase.privateKey);
 		genesisVote.voteId = "0";
 		
@@ -103,59 +104,87 @@ public class VoteChain {
 		long candidateY= StringUtils.generateNonce();
 		System.out.println(candidateY);
 		//System.out.println(StringUtils.getStringFromKey(walletA.publicKey));
+                
+                ArrayList <Vote> nonMinedVotes = new ArrayList<Vote>();
 
 		Block block1 = new Block(genesis.getHash());
 		System.out.println("\nWalletA is Attempting to vote on candidate X...");
-		
-		 if(blockchainHadVoted(walletA.publicKey) || nonMinedBlockhadVoted(walletA.publicKey, genesis)){
+                
+                if(blockchainHadVoted(walletA.publicKey,1) || nonMinedBlockhadVoted(walletA.publicKey, nonMinedVotes,1)){
 			System.out.println("TRUE");
 			 System.out.println("votante A  ja votou");
-		 }
-		 else{
-			System.out.println("Pode Votar");
-			block1.addVote(walletA.sendVote(candidateX,walletA.n_votes ));
 		}
-		 	
-		System.out.println("\nWalletB is Attempting to vote on candidate X...");
-		 if(blockchainHadVoted(walletB.publicKey) || nonMinedBlockhadVoted(walletB.publicKey, genesis)){
+		else{
+			System.out.println("Pode Votar");
+			block1.addVote(walletA.sendVote(candidateX,walletA.n_votes,1 ));
+                        nonMinedVotes.add(walletA.sendVote(candidateX,walletA.n_votes,1 ));
+		}
+                
+                System.out.println("\nWalletA is Attempting to vote on candidate AGAIN...");
+                
+                if(blockchainHadVoted(walletA.publicKey,1) || nonMinedBlockhadVoted(walletA.publicKey, nonMinedVotes,1)){
+			System.out.println("TRUE");
+			 System.out.println("votante A  ja votou");
+		}
+		else{
+			System.out.println("Pode Votar");
+			block1.addVote(walletA.sendVote(candidateX,walletA.n_votes,1 ));
+                        nonMinedVotes.add(walletA.sendVote(candidateX,walletA.n_votes,1 ));
+		}
+                
+                System.out.println("\nWalletB is Attempting to vote on candidate X...");
+		 if(blockchainHadVoted(walletB.publicKey,2) || nonMinedBlockhadVoted(walletB.publicKey, nonMinedVotes,2)){
 			 System.out.println("TRUE");
 			 System.out.println("votante B ja votou");
 		}
 		else{
 			 System.out.println("Pode Votar");
-			 block1.addVote(walletB.sendVote(candidateX,walletB.n_votes ));
+			 block1.addVote(walletB.sendVote(candidateX,walletB.n_votes,2 ));
+                         nonMinedVotes.add(walletB.sendVote(candidateX,walletB.n_votes,2 ));
 		 }
+                 
+                 addBlock(block1);
+                 nonMinedVotes.clear();
 		
-		addBlock(block1);
-
 		Block block2 = new Block(block1.getHash());
-		System.out.println("\nWalletC is Attempting to vote on candidate Y...");
-		if(blockchainHadVoted(walletC.publicKey) || nonMinedBlockhadVoted(walletC.publicKey, block1)){
+                System.out.println("\nWalletC is Attempting to vote on candidate Y...");
+                if(blockchainHadVoted(walletC.publicKey,2) || nonMinedBlockhadVoted(walletC.publicKey, nonMinedVotes,2)){
 			System.out.println("TRUE");
 			System.out.println("Votante C ja votou");
 		}
 		else{
 			System.out.println("Pode Votar");
-			block2.addVote(walletC.sendVote(candidateY,walletC.n_votes ));
+			block2.addVote(walletC.sendVote(candidateY,walletC.n_votes, 2));
+                        nonMinedVotes.add(walletC.sendVote(candidateY,walletC.n_votes, 2));
 		}
-			
-		System.out.println("\nWalletD is Attempting to vote on candidate Y...");
-		if(blockchainHadVoted(walletD.publicKey) || nonMinedBlockhadVoted(walletD.publicKey, block1)){
+                System.out.println("\nWalletC is Attempting to vote on candidate Y AGAIN");
+                if(blockchainHadVoted(walletC.publicKey,1) || nonMinedBlockhadVoted(walletC.publicKey, nonMinedVotes,1)){
+			System.out.println("TRUE");
+			System.out.println("Votante C ja votou");
+		}
+		else{
+			System.out.println("Pode Votar");
+			block2.addVote(walletC.sendVote(candidateY,walletC.n_votes, 1));
+                        nonMinedVotes.add(walletC.sendVote(candidateY,walletC.n_votes, 1));
+		}
+                
+                System.out.println("\nWalletD is Attempting to vote on candidate Y...");
+		if(blockchainHadVoted(walletD.publicKey,2) || nonMinedBlockhadVoted(walletD.publicKey, nonMinedVotes,2)){
 			System.out.println("TRUE");
 			System.out.println("Votante D ja votou");
 		}
 		else{
 			System.out.println("Pode Votar");
-			block2.addVote(walletD.sendVote(candidateY,walletD.n_votes ));		
+			block2.addVote(walletD.sendVote(candidateY,walletD.n_votes, 2 ));
+                        nonMinedVotes.add(walletD.sendVote(candidateY,walletD.n_votes, 2 ));
 		 }
-		
-		
-		addBlock(block2);
+                addBlock(block2);
+                nonMinedVotes.clear();
 		
 		System.out.println("\n");
 		System.out.println("\n");
-		block1.ImprimeBlock(1);
-		block2.ImprimeBlock(2);
+		//block1.ImprimeBlock(1);
+		//block2.ImprimeBlock(2);
 		
 		System.out.println(isChainValid());
 		
