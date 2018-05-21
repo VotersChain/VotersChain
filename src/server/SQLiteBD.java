@@ -145,13 +145,14 @@ public class SQLiteBD {
                   "FOREIGN KEY(pubkey) REFERENCES User(pubkey)"  
                     + ");"  ;
             
-            sql = "CREATE TABLE IF NOT EXISTS Election "+
-                  "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"+
-                  "name NVARCHAR(100) NOT NULL"
-                    + ");"  ;
-            
             stmt.executeUpdate(sql);
             
+            sql = "CREATE TABLE IF NOT EXISTS Election "+
+                  "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"+
+                  "name NVARCHAR(100) NOT NULL" +
+                  "status INTEGER NOT NULL"
+                    + ");"  ;
+             
             stmt.executeUpdate(sql);
             
             sql = "CREATE TABLE IF NOT EXISTS Result "
