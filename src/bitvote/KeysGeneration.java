@@ -7,10 +7,6 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
 
-/**
- *
- * @author Asus
- */
 
 // Geração de par de chaves com Curvas Elipticas
 
@@ -25,7 +21,8 @@ public final class KeysGeneration
 		{
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA","BC");
 			SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
-			ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+			//ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp256r1");
+			ECGenParameterSpec ecSpec = new ECGenParameterSpec("secp521r1");
 			
 			//Inicializa o gerador de chaves e gera um par de chaves
 			keyGen.initialize(ecSpec, random);
