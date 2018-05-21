@@ -47,8 +47,8 @@ public class VotersWallet {
 		
 		
 		
-        public Vote sendVote(long candidateNonce, int value) throws Exception{
-            Vote newVote= new Vote(publicKey, candidateNonce, value);
+        public Vote sendVote(long candidateNonce, int value, int id_eleicao) throws Exception{
+            Vote newVote= new Vote(publicKey, candidateNonce, value, id_eleicao);
             newVote.generateSignature(privateKey);
             
             return newVote;      
