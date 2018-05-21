@@ -8,12 +8,9 @@ package bitvote;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-/**
- *
- * @author jferr
- */
+
 public class Vote {
-    
+    public String voteId; //contém o hash do voto
     public PublicKey sender;
     public long candidateNonce;
     public int numberVotes;
@@ -38,6 +35,25 @@ public class Vote {
        return SignatureUtils.verifyString(data, signature, sender);
    }
    
+       public boolean processVote() throws Exception{
+        if(verifySignature()==false){
+            System.out.println("Assinatura do Voto nao Verificada");
+            return false;
+        }
+        
+        voteId = calculateHash();
+       
+        return true; 
+    }
+	  
+	private String calculateHash()
+	{
+		id++;
+		return HashUtils.hashFuncSHA256(StringUtils.getStringFromKey(sender) + 
+				Long.toString(candidateNonce)+
+				Integer.toString(numberVotes) + id
+				);
+	}
    
    
    
