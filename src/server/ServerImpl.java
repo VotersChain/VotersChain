@@ -167,6 +167,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             
             SQLiteBD bd = new SQLiteBD();
             
+            String insert = "";
+            
             PreparedStatement prstmt = bd.returnPrStmt(insert);
             
         }
