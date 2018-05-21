@@ -6,7 +6,18 @@
 package bitvote;
 
 import java.security.Key;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -29,6 +40,22 @@ public class StringUtils {
 	public static String getStringFromKey(Key key) {
 		return Base64.getEncoder().encodeToString(key.getEncoded());
 	}
+        public static PublicKey getPublicKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
+            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+            byte[] decodeKey = Base64.getDecoder().decode(key);
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodeKey);
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","BC");
+            PublicKey pk = keyFactory.generatePublic(keySpec);
+            return pk;
+        }
+        public static PrivateKey getPrivateKeyFromString(String key) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
+            Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+            byte[] decodeKey = Base64.getDecoder().decode(key);
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodeKey);
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA","BC");
+            PrivateKey pk = keyFactory.generatePrivate(keySpec);
+            return pk;
+        }
         
         public static String getStringFromSignature(byte[] SignatureBytes){
             return Base64.getEncoder().encodeToString(SignatureBytes);
@@ -64,4 +91,21 @@ public class StringUtils {
             return merkleRoot;
 	}
         
+        public static void main(String[] args) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException{
+            KeysGeneration kg = new KeysGeneration();
+            KeyPair keyPair = new KeysGeneration().generateKeys();
+            PublicKey pk = keyPair.getPublic();
+            PrivateKey sk = keyPair.getPrivate();
+            
+            StringUtils su = new StringUtils();
+            String pks = getStringFromKey(pk);
+            PublicKey pubk = su.getPublicKeyFromString(pks);
+            System.out.println(""+pubk.equals(pk));
+            
+            String sks = getStringFromKey(sk);
+            PrivateKey privk = su.getPrivateKeyFromString(sks);
+            System.out.println(""+privk.equals(sk));
+        }
+        
 }
+
