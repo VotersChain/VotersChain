@@ -40,6 +40,10 @@ public class VotersWallet {
 		publicKey = keyPar.getPublic();	   
 		n_votes = n;
 	}
+
+	public void setN_votes(int n_votes) {
+		this.n_votes = n_votes;
+	}
 		
 		
 		
