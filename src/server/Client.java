@@ -22,7 +22,7 @@ public class Client {
     public static void main(String[] args) {
         try{
             // Make reference to SSL-based registry
-            Registry registry = LocateRegistry.getRegistry(InetAddress.getLocalHost().getHostName(), PORT, new RMISSLClientSocketFactory());
+            Registry registry = LocateRegistry.getRegistry("DESKTOP-C38TKIF", PORT, new RMISSLClientSocketFactory());
             
             
             // "obj" is the identifier that we'll use to refer
