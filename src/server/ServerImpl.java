@@ -151,11 +151,17 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         
         System.out.print("Nome das eleições:");
         Scanner in = new Scanner(System.in);
-        String name="";
+        SQLiteBD bd = new SQLiteBD();
+        
+        String name = "";
+        String insert="INSERT INTO Candidate(id,name) VALUES(?);";
         
         name = in.next();
         
+        PreparedStatement prstmt = bd.returnPrStmt(insert);
         
+        
+  
         System.out.print("Insira o número de candidatos:");
         
         
@@ -165,11 +171,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             System.out.print("Nome do Candidato:");
             name = in.next();
             
-            SQLiteBD bd = new SQLiteBD();
-            
-            String insert = "";
-            
-            PreparedStatement prstmt = bd.returnPrStmt(insert);
+            prstmt = bd.returnPrStmt(insert);
             
         }
     }
