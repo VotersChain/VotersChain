@@ -149,7 +149,7 @@ public class SQLiteBD {
             
             sql = "CREATE TABLE IF NOT EXISTS Election "+
                   "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"+
-                  "name NVARCHAR(100) NOT NULL" +
+                  "name NVARCHAR(100) NOT NULL," +
                   "status INTEGER NOT NULL"
                     + ");"  ;
              
@@ -157,7 +157,7 @@ public class SQLiteBD {
             
             sql = "CREATE TABLE IF NOT EXISTS Result "
                     + "(candidateid UNSIGNED INT NOT NULL,"
-                    + "electionid INteger NOT NULL,"
+                    + "electionid INTEGER NOT NULL,"
                     + "PRIMARY KEY (candidateid, electionid)"
                     + "FOREIGN KEY(candidateid) REFERENCES Candidate(id),"
                     + "FOREIGN KEY(electionid) REFERENCES Election(id)"
