@@ -9,31 +9,44 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-/**
- *
- * @author jferr
- */
+
 public class VotersWallet {
-        public int nvotes;
+        public int n_votes;
 	public PrivateKey privateKey;
 	public PublicKey publicKey;
     
 	public VotersWallet()
 	{		
-                this.nvotes = 1;
+		this.n_votes = 1;
 		KeyPair keyPar = new KeysGeneration().generateKeys();
 		privateKey = keyPar.getPrivate();
 		publicKey = keyPar.getPublic();	   
 	}
+	
         public VotersWallet(PrivateKey pvk, PublicKey puk){
-            this.nvotes = 1;
+            this.n_votes = 1;
             privateKey = pvk;
             publicKey = puk;
         }
         public VotersWallet(PublicKey puk){
-            this.nvotes = 1;
+            this.n_votes = 1;
             publicKey = puk;
         }
+	
+	public VotersWallet(int n)
+	{		
+		KeyPair keyPar = new KeysGeneration().generateKeys();
+		privateKey = keyPar.getPrivate();
+		publicKey = keyPar.getPublic();	   
+		n_votes = n;
+	}
+
+	public void setN_votes(int n_votes) {
+		this.n_votes = n_votes;
+	}
+		
+		
+		
         public Vote sendVote(long candidateNonce, int value) throws Exception{
             Vote newVote= new Vote(publicKey, candidateNonce, value);
             newVote.generateSignature(privateKey);

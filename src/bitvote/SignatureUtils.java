@@ -9,19 +9,13 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
-import sun.misc.BASE64Encoder;
 
-/**
- *
- * @author paulo
- */
+
 public class SignatureUtils {
     private static int BUFSIZE = 8192;
     

@@ -8,10 +8,7 @@ package bitvote;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
-/**
- *
- * @author jferr
- */
+
 public class Vote {
     public String voteId; //contém o hash do voto
     public PublicKey sender;
@@ -26,12 +23,8 @@ public class Vote {
         this.candidateNonce = to;
         this.numberVotes = value;
     }
-
-    Vote(PublicKey publicKey, PublicKey publicKey0, int i) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-    
-    
+   
+   
     public void generateSignature(PrivateKey privateKey) throws Exception{
         String data = StringUtils.getStringFromKey(sender) + Long.toString(candidateNonce) + Integer.toString(numberVotes);
         signature = SignatureUtils.signString(data, privateKey);
@@ -61,7 +54,7 @@ public class Vote {
                );
    }
    
-   
-   
+
+ 
    
 }
