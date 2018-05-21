@@ -142,6 +142,36 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
     
     }
     
+    @Override
+    public String requestKey(){
+        return "af1129c47f20f6394915309852624a8b9202abdeb6b696e540b41b5b4e9442b8";
+    }
+    
+    private static void startElections(){
+        
+        System.out.print("Nome das eleições:");
+        Scanner in = new Scanner(System.in);
+        String name="";
+        
+        name = in.next();
+        
+        
+        System.out.print("Insira o número de candidatos:");
+        
+        
+        int n = in.nextInt();
+        
+        for(int i=0;i<n;i++){
+            System.out.print("Nome do Candidato:");
+            name = in.next();
+            
+            SQLiteBD bd = new SQLiteBD();
+            
+            PreparedStatement prstmt = bd.returnPrStmt(insert);
+            
+        }
+    }
+    
     public static void main(String[] args) throws IOException {
         
         // Create and install a security manager
@@ -177,9 +207,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
                 int sair = 0;
                 while (sair == 0) {
                     System.out.println("***********************************");
-                    System.out.println("1-Login");
-                    System.out.println("2-Registo");
-                    System.out.println("3-Convidado");
+                    System.out.println("1-Iniciar Eleições");
+                    System.out.println("2-Terminar Eleições");
                     System.out.println("0-Sair");
                     System.out.print("-->");
 

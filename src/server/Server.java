@@ -17,6 +17,6 @@ public interface Server extends Remote{
     String regist(String name,long idNumber) throws RemoteException;
     String loginStepOne(String pubkey) throws RemoteException;
     Boolean loginStepTwo(byte[] signNonce) throws RemoteException;
-    
-    
+    String requestKey() throws RemoteException;
+            
 }
