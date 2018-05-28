@@ -88,12 +88,11 @@ public class VoteChain {
             int[] totalVotos = new int[candidates];
             Arrays.fill(totalVotos, 0);
             
-            
             for (Block item : blockchain) {
                     for (Vote v : item.getData()) {
                         if(v.id_eleicao == eleicao_id){
                             for (Nonce nonce : nonces) {
-                                if(v.candidateNonce == nonce.getNonce_id() && v.sender.equals(nonce.getPk())){
+                                if(v.candidateNonce == nonce.getNonce_id() && v.sender.equals(nonce.getPk()) && nonce.getEleicao_id() == eleicao_id){
                                     totalVotos[nonce.getCandidate_id()] = totalVotos[nonce.getCandidate_id()] + v.numberVotes;
                                 }      
                             }
@@ -156,7 +155,7 @@ public class VoteChain {
 			System.out.println("Pode Votar");
 			block1.addVote(walletA.sendVote(candidateX,walletA.n_votes,1 ));
                         nonMinedVotes.add(walletA.sendVote(candidateX,walletA.n_votes,1 ));
-                        n.add(new Nonce(candidateX, walletA.publicKey, 0));
+                        n.add(new Nonce(candidateX, walletA.publicKey, 0,1));
 		}
                 
                 System.out.println("\nWalletA is Attempting to vote on candidate AGAIN...");
@@ -180,7 +179,7 @@ public class VoteChain {
 			 System.out.println("Pode Votar");
 			 block1.addVote(walletB.sendVote(candidateX,walletB.n_votes,2 ));
                          nonMinedVotes.add(walletB.sendVote(candidateX,walletB.n_votes,2 ));
-                         n.add(new Nonce(candidateX, walletB.publicKey, 0));
+                         n.add(new Nonce(candidateX, walletB.publicKey, 0,2));
 		 }
                  
                  addBlock(block1);
@@ -196,7 +195,7 @@ public class VoteChain {
 			System.out.println("Pode Votar");
 			block2.addVote(walletC.sendVote(candidateY,walletC.n_votes, 2));
                         nonMinedVotes.add(walletC.sendVote(candidateY,walletC.n_votes, 2));
-                        n.add(new Nonce(candidateY, walletC.publicKey, 1));
+                        n.add(new Nonce(candidateY, walletC.publicKey, 1, 2));
 		}
                 System.out.println("\nWalletC is Attempting to vote on candidate Y AGAIN");
                 if(blockchainHadVoted(walletC.publicKey,1) || nonMinedBlockhadVoted(walletC.publicKey, nonMinedVotes,1)){
@@ -207,7 +206,7 @@ public class VoteChain {
 			System.out.println("Pode Votar");
 			block2.addVote(walletC.sendVote(candidateY,walletC.n_votes, 1));
                         nonMinedVotes.add(walletC.sendVote(candidateY,walletC.n_votes, 1));
-                        n.add(new Nonce(candidateY, walletC.publicKey, 1));
+                        n.add(new Nonce(candidateY, walletC.publicKey, 1,1));
 		}
                 
                 System.out.println("\nWalletD is Attempting to vote on candidate Y...");
@@ -219,7 +218,7 @@ public class VoteChain {
 			System.out.println("Pode Votar");
 			block2.addVote(walletD.sendVote(candidateY,walletD.n_votes, 2 ));
                         nonMinedVotes.add(walletD.sendVote(candidateY,walletD.n_votes, 2 ));
-                        n.add(new Nonce(candidateY, walletD.publicKey, 1));
+                        n.add(new Nonce(candidateY, walletD.publicKey, 1,2));
 		 }
                 addBlock(block2);
                 nonMinedVotes.clear();
