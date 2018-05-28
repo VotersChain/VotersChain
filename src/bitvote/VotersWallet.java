@@ -32,14 +32,6 @@ public class VotersWallet {
             this.n_votes = 1;
             publicKey = puk;
         }
-	
-	public VotersWallet(int n)
-	{		
-		KeyPair keyPar = new KeysGeneration().generateKeys();
-		privateKey = keyPar.getPrivate();
-		publicKey = keyPar.getPublic();	   
-		n_votes = n;
-	}
 
 	public void setN_votes(int n_votes) {
 		this.n_votes = n_votes;
