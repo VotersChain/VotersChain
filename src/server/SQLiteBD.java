@@ -49,12 +49,15 @@ public class SQLiteBD {
     
     //construtor vazio
     public SQLiteBD(){
-        
+        File fBD = new File("BitVote.db");
+        if (fBD.exists()) {
+            encryptionDB('d');
+        }
     }
     
     //returna o statement da bd
     public Statement returnStmt(){
-        encryptionDB('d');
+        
         c = null;
         stmt = null;
         try{
@@ -72,7 +75,7 @@ public class SQLiteBD {
     
     //returna o preparedstatement da bd
     public PreparedStatement returnPrStmt(String sql){
-        encryptionDB('d');
+        
         c = null;
         prstmt = null;
         try{
@@ -89,16 +92,21 @@ public class SQLiteBD {
     }
     
     
-    public void closeBD() throws SQLException{
-        if(stmt!=null){
-            stmt.close();
+    public void closeBD(){
+        try{
+            if (stmt != null) {
+                stmt.close();
+            } else if (prstmt != null) {
+                prstmt.close();
+            }
+
+            c.close();
+            encryptionDB('e');
         }
-        else if(prstmt!=null){
-            prstmt.close();
+        catch(SQLException e){
+            encryptionDB('e');
         }
-       
-        c.close();
-        encryptionDB('e');
+        
     }
     
     //cria a bd e tabela file
@@ -158,6 +166,7 @@ public class SQLiteBD {
             sql = "CREATE TABLE IF NOT EXISTS Result "
                     + "(candidateid UNSIGNED INT NOT NULL,"
                     + "electionid INTEGER NOT NULL,"
+                    + "votesnumber INTEGER NOT NULL,"
                     + "PRIMARY KEY (candidateid, electionid)"
                     + "FOREIGN KEY(candidateid) REFERENCES Candidate(id),"
                     + "FOREIGN KEY(electionid) REFERENCES Election(id)"
@@ -175,12 +184,8 @@ public class SQLiteBD {
         System.out.println("Table created successfuly");
         
     }
-
-    Statement createStatement() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
     
-    public void encryptionDB(char c){
+    private void encryptionDB(char c){
         
         String outString="";
         

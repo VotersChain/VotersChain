@@ -14,11 +14,7 @@ import java.rmi.RMISecurityManager;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -68,6 +64,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
 
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
         }
         
         VotersWallet wallet = new VotersWallet(); //Criar uma carteira
@@ -84,6 +81,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             bd.closeBD(); //fecha bd e encripta
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
         }
         
         return keys;
@@ -94,7 +92,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         String stringNonce = "";
         publickey = pubkey;
         
-        //verifica se a chave pubica existe na bd
+        //verifica se a chave publica existe na bd
         SQLiteBD bd = new SQLiteBD();
         String query = "SELECT * FROM User WHERE pubkey=?;";
         PreparedStatement prstmt = bd.returnPrStmt(query);
@@ -110,6 +108,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
 
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
         }
 
         //gera nonce
@@ -128,8 +127,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         } catch (Exception ex){
             System.out.println(ex.getMessage());
         } 
-        
-        
+             
         boolean isLoged=false;
         try {
             // verifica o nonce assinado
@@ -150,30 +148,125 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
     private static void startElections(){
         
         System.out.print("Nome das eleições:");
-        Scanner in = new Scanner(System.in);
-        SQLiteBD bd = new SQLiteBD();
+        
+        SQLiteBD bd = new SQLiteBD();  
+        Statement stmt = null;
+        ResultSet res;
+        int electionid = -1;
         
         String name = "";
-        String insert="INSERT INTO Candidate(id,name) VALUES(?);";
+        String insert="INSERT INTO Election(name,status) VALUES(?,1);";
         
-        name = in.next();
+        name = Read.readString();
         
         PreparedStatement prstmt = bd.returnPrStmt(insert);
         
-        
+        try {
+            prstmt.setString(1,name);
+            prstmt.executeUpdate();
+            
+            // obtem o id da eleição
+            stmt = bd.returnStmt();
+            res = stmt.executeQuery("SELECT * FROM Election ORDER BY id DESC LIMIT 1;");
+            
+            if (res.next()) {
+                electionid = res.getInt(1);
+            }
+            bd.closeBD();
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
+        }
   
         System.out.print("Insira o número de candidatos:");
         
-        
-        int n = in.nextInt();
-        
+        int n = Read.readPositiveInt();
+
+        bd = new SQLiteBD();
         for(int i=0;i<n;i++){
+           
             System.out.print("Nome do Candidato:");
-            name = in.next();
-            
+
+            name = Read.readString();
+            insert = "INSERT INTO Candidate(name) VALUES(?);";
             prstmt = bd.returnPrStmt(insert);
+            try {
+                prstmt.setString(1, name);
+                prstmt.executeUpdate();
+                
+                // obtem id do Candidato inserido
+                stmt = bd.returnStmt();
+                res=stmt.executeQuery("SELECT * FROM Candidate ORDER BY id DESC LIMIT 1;");
+                int candidateid=-1;
+                if(res.next()){
+                    candidateid=res.getInt(1);
+                }
+                
+                stmt.close();
+                
+                //inserção na tabela de Resultados para mais tarde registar o nº de votos
+                insert = "INSERT INTO Result(candidateid,electionid,votesnumber) VALUES(?,?,?);";
+                prstmt = bd.returnPrStmt(insert);
+                prstmt.setInt(1, candidateid);
+                prstmt.setInt(2, electionid);
+                prstmt.setInt(3, 0);
+                prstmt.executeUpdate();
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                bd.closeBD();
+            }
             
         }
+        
+        bd.closeBD();
+    }
+    
+    private static void endElection(){
+        
+        SQLiteBD bd = new SQLiteBD();
+        PreparedStatement prstmt = null;
+      
+        
+        Statement stmt = bd.returnStmt();
+        ResultSet res;
+        
+        System.out.println("------------Eleições a Decorrer------------");
+        int i = 0;
+        try {
+            res = stmt.executeQuery("SELECT * FROM Election WHERE status=1;");
+            while(res.next()){
+                System.out.println("ID das Eleições: "+res.getInt(1));
+                System.out.println("Nome: "+res.getString(2));
+                System.out.println("-------------------------------------------");
+                i++;
+            }
+            bd.closeBD();
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        if(i==0){
+            return;
+        }
+        
+        System.out.print("ID das Eleições a terminar:");
+        
+        
+        int electionid = Read.readIntInInterval(i+1);
+        
+        bd = new SQLiteBD();
+        stmt = bd.returnStmt();
+        try {
+            stmt.executeUpdate("UPDATE Election SET status=0 WHERE id="+electionid+";");
+            bd.closeBD();
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
+        }
+        
+        //Calcular o nº de votos de cada Candidato 
+        
+        
     }
     
     public static void main(String[] args) throws IOException {
@@ -200,8 +293,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         
         //Criar bd se não existir
         File fBD = new File("BitVote.db");
-        SQLiteBD bd = new SQLiteBD();
         if (!fBD.exists()) {
+            SQLiteBD bd = new SQLiteBD();
             bd.createBD();
         }
         
@@ -218,6 +311,20 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
 
                     Scanner in = new Scanner(System.in);
                     int op = in.nextInt();
+                    
+                    switch(op){
+                        case 1:
+                            startElections();
+                            break;
+                        case 2:
+                            endElection();
+                            break;
+                        case 0:
+                            sair=1;
+                            break;
+                        default:
+                            System.out.println("Opção errada");
+                    }
                 }    
             }
         ).start();
