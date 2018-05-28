@@ -5,12 +5,13 @@
  */
 package bitvote;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
 
-public class Block
+public class Block implements Serializable
 {
 	private String hash;
 	private String previousHash;
