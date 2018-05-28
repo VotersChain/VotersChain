@@ -11,28 +11,35 @@ package bitvote;
  */
 public class Candidato {
     private int id;
-    private String candidateName;
+    private int total;
     
-    public Candidato(int id, String candidateName){
+    public Candidato(int id, int total){
         this.id = id;
-        this.candidateName = candidateName;
+        this.total = total;
     }
 
     public int getId() {
         return id;
     }
 
-    public String getCandidateName() {
-        return candidateName;
-    }
-
     public void setId(int id) {
         this.id = id;
     }
 
-    public void setCandidateName(String candidateName) {
-        this.candidateName = candidateName;
+    public int getTotal() {
+        return total;
     }
+
+    public void setTotal(int x) {
+        this.total += x;
+    }
+
+    @Override
+    public String toString() {
+        return "Candidato{" + "id=" + id + ", total=" + total + '}';
+    }
+
+    
     
     
 }
