@@ -15,11 +15,21 @@ public class Nonce {
     private long nonce_id;
     private PublicKey pk;
     private int candidate_id;
+    private int eleicao_id;
 
-    public Nonce(long nonce_id, PublicKey pk, int candidate_id) {
+    public Nonce(long nonce_id, PublicKey pk, int candidate_id, int eleicao_id) {
         this.nonce_id = nonce_id;
         this.pk = pk;
         this.candidate_id = candidate_id;
+        this.eleicao_id = eleicao_id;
+    }
+
+    public int getEleicao_id() {
+        return eleicao_id;
+    }
+
+    public void setEleicao_id(int eleicao_id) {
+        this.eleicao_id = eleicao_id;
     }
 
     public long getNonce_id() {
@@ -44,6 +54,11 @@ public class Nonce {
 
     public void setCandidate_id(int candidate_id) {
         this.candidate_id = candidate_id;
+    }
+
+    @Override
+    public String toString() {
+        return "Nonce{" + "nonce_id=" + nonce_id + ", pk=" + pk + ", candidate_id=" + candidate_id + '}';
     }
     
     
