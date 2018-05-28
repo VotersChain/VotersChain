@@ -5,6 +5,7 @@
  */
 package bitvote;
 
+import java.io.Serializable;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
@@ -12,7 +13,7 @@ import java.security.PublicKey;
  *
  * @author jferr
  */
-public class Vote {
+public class Vote implements Serializable {
     public String voteId; //contém o hash do voto
     public PublicKey sender;
     public long candidateNonce;
