@@ -22,6 +22,7 @@ import java.sql.Statement;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import p2p.Servidor;
 
 /**
  *
@@ -269,6 +270,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         
     }
     
+    
     public static void main(String[] args) throws IOException {
         
         // Create and install a security manager
@@ -298,6 +300,13 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             bd.createBD();
         }
         
+        new Thread(()
+            -> {
+                Servidor servidor = new Servidor();
+            }
+        ).start();
+    
+        
         //Menu para implementar os requisitos do servidor
         new Thread(()
             -> {
@@ -314,13 +323,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
                     
                     switch(op){
                         case 1:
-                            startElections();
+                            //startElections();
                             break;
                         case 2:
-                            endElection();
+                            //endElection();
                             break;
                         case 0:
                             sair=1;
+                            System.exit(0);
                             break;
                         default:
                             System.out.println("Opção errada");
