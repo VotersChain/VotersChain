@@ -15,6 +15,7 @@ public class Nonce {
     private long nonce_id;
     private PublicKey pk;
     private int candidate_id;
+    private String nome;
     private int eleicao_id;
 
     public Nonce(long nonce_id, PublicKey pk, int candidate_id, int eleicao_id) {
@@ -22,6 +23,19 @@ public class Nonce {
         this.pk = pk;
         this.candidate_id = candidate_id;
         this.eleicao_id = eleicao_id;
+    }
+    public Nonce(long nonce_id, int candidate_id, String nome){
+        this.nonce_id = nonce_id;
+        this.candidate_id = candidate_id;
+        this.nome=nome;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public int getEleicao_id() {
