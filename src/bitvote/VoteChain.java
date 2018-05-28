@@ -12,8 +12,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import server.SQLiteBD;
 import server.ServerImpl;
 
@@ -84,16 +87,26 @@ public class VoteChain {
 		return false;
 	}
         
-        public static int[] contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces){
-            int[] totalVotos = new int[candidates];
-            Arrays.fill(totalVotos, 0);
+        public static ArrayList<Candidato> contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces){
+            ArrayList<Candidato> totalVotos = new ArrayList<Candidato>();
+            totalVotos.add(new Candidato(0, 0));
             
             for (Block item : blockchain) {
                     for (Vote v : item.getData()) {
                         if(v.id_eleicao == eleicao_id){
                             for (Nonce nonce : nonces) {
+                                Boolean exist = false;
+                                List <Candidato> cl = totalVotos.stream().filter(s -> nonce.getCandidate_id()== s.getId()).collect(Collectors.toList());
+                                if(cl.isEmpty()){
+                                    totalVotos.add(new Candidato(nonce.getCandidate_id(),0));
+                                }
                                 if(v.candidateNonce == nonce.getNonce_id() && v.sender.equals(nonce.getPk()) && nonce.getEleicao_id() == eleicao_id){
-                                    totalVotos[nonce.getCandidate_id()] = totalVotos[nonce.getCandidate_id()] + v.numberVotes;
+                                    //totalVotos[nonce.getCandidate_id()] = totalVotos[nonce.getCandidate_id()] + v.numberVotes;
+                                    for (Candidato c : totalVotos ) {
+                                        if(c.getId()==nonce.getCandidate_id()){
+                                            c.setTotal(v.numberVotes);
+                                        }
+                                    } 
                                 }      
                             }
                         }
@@ -107,7 +120,7 @@ public class VoteChain {
             
             return totalVotos;
             
-        } 
+        }  
 	public static Block lastBlock()
 	{
 		return blockchain.get(blockchain.size()-1);	
@@ -236,8 +249,9 @@ public class VoteChain {
 		
 		System.out.println(isChainValid());
                 
-                int[] x = contaVotos(1,2,n);
-                System.out.println(""+Arrays.toString(x));
+                //int[] x = contaVotos(1,2,n);
+                ArrayList<Candidato> x = contaVotos(2,2,n);
+                System.out.println(""+x.toString());
                 
 		Block lastBlock = lastBlock();
 		lastBlock.ImprimeBlock(99);
