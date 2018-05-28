@@ -108,6 +108,12 @@ public class VoteChain {
             return totalVotos;
             
         } 
+	public static Block lastBlock()
+	{
+		return blockchain.get(blockchain.size()-1);	
+	}
+		
+		
 
 	public static void main(String[] args) throws Exception 
 	{
@@ -233,7 +239,10 @@ public class VoteChain {
                 int[] x = contaVotos(1,2,n);
                 System.out.println(""+Arrays.toString(x));
                 
-                
+		Block lastBlock = lastBlock();
+		lastBlock.ImprimeBlock(99);
+		
+				
 		
 		
 		
