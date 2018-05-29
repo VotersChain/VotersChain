@@ -24,7 +24,7 @@ public class Teste {
         if (num == 1) {
             Servidor servidor = new Servidor();
         } else {
-            Cliente cliente = new Cliente("localhost");
+            //Cliente cliente = new Cliente("localhost");
         }
     }
     

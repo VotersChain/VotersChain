@@ -5,68 +5,95 @@
  */
 package p2p;
 
-import java.io.BufferedReader;
+import bitvote.Block;
+import bitvote.StringUtils;
+import bitvote.Vote;
+import bitvote.VoteChain;
+import bitvote.VotersWallet;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import server.Server;
 
 /**
  *
  * @author Vitor
  */
 public class Cliente {
-    
-    public void EnviaMensagem(Socket s) throws IOException {
-        System.out.println("Function: Enviar Mensagem");
-        ObjectOutputStream oos = null;
-        oos = new ObjectOutputStream(s.getOutputStream());
 
-        //Para teste - Ler do teclado
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String mensagem = "";
-        while (true) {
-            mensagem = in.readLine();
-            System.out.println("Mensagem: " + mensagem);
-            oos.writeObject(mensagem);
-            System.out.println("Mensagem Enviada");
-        }
+    private ObjectOutputStream oos;
+    private VoteChain BlockChain;
+    private int FLAG_MINING = 3;
+
+    public void makeVote(String sk, String pk) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, Exception {
+        // Cria uma carteira
+        VotersWallet wallet = new VotersWallet(StringUtils.getPrivateKeyFromString(sk), StringUtils.getPublicKeyFromString(pk));
+
+        //Exemplo com um candidato
+        long candidateX = StringUtils.generateNonce();
+        System.out.println(candidateX);
+
+        //Votar no candidato x, com a carteira respetiva, id
+        Vote v = wallet.sendVote(candidateX, wallet.n_votes, 1); //testes
+
+        //indica ao servidor que vai mandar um objeto do tipo voto
+        oos.writeObject("send-Voto");
+        oos.flush();
+
+        //Enviar o voto para broadcast
+        oos.writeObject(v);
+        oos.flush();
+        System.out.println("Mensagem enviada");
     }
-    
-    public Cliente(String address) throws IOException, ClassNotFoundException {
+
+    public Cliente(String address, VoteChain BlockChainAtual, Server obj) throws IOException, ClassNotFoundException {
         Socket s = new Socket(address, 2222);
+        BlockChain = BlockChainAtual;
 
         System.out.println("Conectado");
-        
-        Thread thread = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    EnviaMensagem(s);
-                } catch (IOException ex) {
-                    Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+        oos = new ObjectOutputStream(s.getOutputStream());
+
+        //Ficar à escuta
+        new Thread(()
+                -> {
+            try {
+                ObjectInputStream ois = null;
+                ois = new ObjectInputStream(s.getInputStream());
+                
+                while (true) {
+                    //Identificar qual o obejcto recebido
+                    String ObjectType = (String) ois.readObject();
+
+                    //Se voto recebido
+                    if (ObjectType.equals("send-Voto")) {
+                        System.out.println("Cliente: Recebe Voto");                    
+                        
+                    } //Se BlockChain recebida
+                    else if (ObjectType.equals("send-BlockChain")) {
+                        System.out.println("Cliente: Recebe BlockChain");
+                        
+                        //Atualizar a BlockChain do Server
+                        //obj.
+                        
+                        //Fazer Broadcast da BlockChain pelos restantes clientes
+                        
+                    }
                 }
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-        
-        ObjectInputStream ois = null;
-        ois = new ObjectInputStream(s.getInputStream());
-        String data = null;
-        int i = 0;
-        while (true) {
-            data = (String) ois.readObject();
-            
-            if(data==null){
-                break;
-            }
-            else{
-                System.out.println("Mensagem: " + data);
+            } catch (IOException ex) {
+                System.out.println("Server Desligou");
+                System.exit(0);
+                //Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (ClassNotFoundException ex) {
+                System.out.println("Server off");
+                //Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        ).start();
     }
 }
 

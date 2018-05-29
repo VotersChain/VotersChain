@@ -8,6 +8,7 @@ package server;
 import bitvote.AES;
 import bitvote.SignatureUtils;
 import bitvote.StringUtils;
+import bitvote.VoteChain;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -29,6 +30,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.bind.DatatypeConverter;
+import p2p.Cliente;
 
 /**
  *
@@ -37,6 +39,11 @@ import javax.xml.bind.DatatypeConverter;
 public class Client {
 
     private static final int PORT = 2019;
+    private static String chavePublica;
+    private static String chavePrivada;
+    private static String Host = "localhost";
+    // Pascoal - DESKTOP-C38TKIF
+    // Édi - Asus-Pc
 
     public static int Registo(Server obj) {
         try {
@@ -64,6 +71,8 @@ public class Client {
             pk = keys[0];
             sk = keys[1];
             System.out.println("SK: " + sk);
+            chavePublica = pk;
+            chavePrivada = sk;
 
             //Gravar num ficheiro
             String fpk = "pk.txt";
@@ -184,12 +193,14 @@ public class Client {
             String pk = br.readLine();
             br.close();
             fr.close();
+            chavePublica = pk;
 
             //(Servidor -> Cliente ) nonce
             String nonce = obj.loginStepOne(pk);
 
             //Ler o sk e decifrar
             String sk = getSK(obj);
+            chavePrivada = sk;
 
             //(Cliente  -> Servidor) Assinar o nonce encia
             byte[] signNonce = SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(sk));
@@ -211,9 +222,23 @@ public class Client {
         return 0;
     }
 
-    public static void menu2(Server obj) {
-        String menu2 = "***********************************\n1-Votar\n2-Status Eleição\n0-Sair\n-->";
+    public static void menu2(Server obj) throws NoSuchProviderException, InvalidKeySpecException, Exception {
+        Cliente cliente = null;
+        
+        //Obter a BlockChian no server
+        VoteChain BlockChain = null;
+        
+        try {
+            //Iniciar conecção ao server e criação do cliente
+            cliente = new Cliente(Host, BlockChain, obj);
 
+        } catch (IOException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        String menu2 = "***********************************\n1-Votar\n2-Status Eleição\n0-Sair\n-->";
         int sair = 0;
         while (sair == 0) {
             System.out.print(menu2);
@@ -221,7 +246,12 @@ public class Client {
             int op = in.nextInt();
             switch (op) {
                 case 1: {
-                    
+                    //Lista de candidatos a votação
+                    //Servidor nonce
+                    //value (nº de votos)
+                    //id da eleição 
+                    //Blockchain só com genesis vote
+                    cliente.makeVote(chavePrivada, chavePublica);
                 }
                 break;
                 case 2: {
@@ -230,6 +260,7 @@ public class Client {
                 break;
                 case 0: {
                     sair = 1;
+                    System.exit(0);
                 }
                 break;
                 default: {
@@ -241,8 +272,7 @@ public class Client {
 
     public static void main(String[] args) {
         try {
-            // Make reference to SSL-based registry - DESKTOP-C38TKIF
-            Registry registry = LocateRegistry.getRegistry("localhost", PORT, new RMISSLClientSocketFactory());
+            Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
             Server obj = (Server) registry.lookup("Server");
 
             String menu1 = "***********************************\n1-Login\n2-Registar\n0-Sair\n-->";
@@ -257,7 +287,7 @@ public class Client {
                         int res = Login(obj);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
-                            System.out.println("Registado!");
+                            System.out.println("Loginado!");
                             menu2(obj);
                             sair = 1;
                         }
@@ -275,6 +305,7 @@ public class Client {
                     break;
                     case 0: {
                         sair = 1;
+                        System.exit(0);
                     }
                     break;
                     default: {
