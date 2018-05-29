@@ -24,7 +24,7 @@ public class VoteChain {
 	{
 		blockchain = new ArrayList<Block>();
 		difficulty = 3;
-		voteBase = new VotersWallet(1);
+		voteBase = new VotersWallet();
 		
 		//create genesis Vote, which sends 1 vote to all wallets:	
 		genesisVote = new Vote(voteBase.publicKey, 0000000000, 0, 0);
