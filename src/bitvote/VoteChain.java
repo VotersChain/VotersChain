@@ -36,6 +36,11 @@ public class VoteChain {
 		return blockchain;
 	}
 	
+
+	public static void setBlockchain(ArrayList<Block> blockchain) {
+		VoteChain.blockchain = blockchain;
+	}
+	
 	
 	
     public  Boolean isChainValid(){
