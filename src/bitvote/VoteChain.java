@@ -7,27 +7,38 @@ package bitvote;
 
 import java.security.PublicKey;
 import java.security.Security;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import server.SQLiteBD;
-import server.ServerImpl;
+
 
 
 public class VoteChain {
-    
-	private static ArrayList<Block> blockchain = new ArrayList<Block>();
-	public static int difficulty = 3;	
-	public static Vote genesisVote;
 
-    public static Boolean isChainValid(){
+	private static ArrayList<Block> blockchain;
+	public  int difficulty;
+	public  Vote genesisVote;
+	public VotersWallet voteBase;
+
+	public VoteChain() throws Exception
+	{
+		blockchain = new ArrayList<Block>();
+		difficulty = 3;
+		voteBase = new VotersWallet(1);
+		
+		//create genesis Vote, which sends 1 vote to all wallets:	
+		genesisVote = new Vote(voteBase.publicKey, 0000000000, 0, 0);
+		genesisVote.generateSignature(voteBase.privateKey);
+		genesisVote.voteId = "0";	
+	}
+	
+	public ArrayList<Block> getBlockchain() {
+		return blockchain;
+	}
+	
+	
+	
+    public  Boolean isChainValid(){
         Block currentBlock;
         Block previousBlock;
         
@@ -56,13 +67,13 @@ public class VoteChain {
         return true;
     }
 	
-	public static void addBlock(Block newBlock) 
+	public  void addBlock(Block newBlock) 
 	{
 		newBlock.mineBlock(difficulty);
 		blockchain.add(newBlock);
 	}
 	
-	public static Boolean blockchainHadVoted(PublicKey pk, int id_eleicao) 
+	public  Boolean blockchainHadVoted(PublicKey pk, int id_eleicao) 
 	{
 		//verificação nos blocos minados
 		for (Block item : blockchain) {
@@ -75,7 +86,7 @@ public class VoteChain {
 		return false;
 	}
 	
-	public static Boolean nonMinedBlockhadVoted(PublicKey pk, ArrayList<Vote> votes, int id_eleicao)
+	public  Boolean nonMinedBlockhadVoted(PublicKey pk, ArrayList<Vote> votes, int id_eleicao)
 	{
             //verificação nos votos que nao foram minados
             if(votes.isEmpty())
@@ -87,47 +98,57 @@ public class VoteChain {
 		return false;
 	}
         
-        public static ArrayList<Candidato> contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces){
+	public static ArrayList<Candidato> contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces)
+	{
             ArrayList<Candidato> totalVotos = new ArrayList<Candidato>();
             totalVotos.add(new Candidato(0, 0));
             
             for (Block item : blockchain) {
                     for (Vote v : item.getData()) {
                         if(v.id_eleicao == eleicao_id){
-                            for (Nonce nonce : nonces) {
-                                Boolean exist = false;
-                                List <Candidato> cl = totalVotos.stream().filter(s -> nonce.getCandidate_id()== s.getId()).collect(Collectors.toList());
-                                if(cl.isEmpty()){
-                                    totalVotos.add(new Candidato(nonce.getCandidate_id(),0));
-                                }
-                                if(v.candidateNonce == nonce.getNonce_id() && v.sender.equals(nonce.getPk()) && nonce.getEleicao_id() == eleicao_id){
-                                    //totalVotos[nonce.getCandidate_id()] = totalVotos[nonce.getCandidate_id()] + v.numberVotes;
-                                    for (Candidato c : totalVotos ) {
-                                        if(c.getId()==nonce.getCandidate_id()){
-                                            c.setTotal(v.numberVotes);
+                            if(v.candidateNonce == 0){
+                                totalVotos.get(0).setTotal(v.numberVotes);
+                            }
+                            else{
+                                for (Nonce nonce : nonces) {
+                                    Boolean exist = false;
+                                    List <Candidato> cl = totalVotos.stream().filter(s -> nonce.getCandidate_id()== s.getId()).collect(Collectors.toList());
+                                    if(cl.isEmpty()){
+                                        totalVotos.add(new Candidato(nonce.getCandidate_id(),0));
+                                    }
+                                    //verificar se existe algum que nao preencha este caso e adicionar ao candidato 0 
+                                    if(v.candidateNonce == nonce.getNonce_id() && v.sender.equals(nonce.getPk()) && nonce.getEleicao_id() == eleicao_id){
+                                        int flag = 0;
+                                        for (Candidato c : totalVotos ) {
+                                            if(c.getId()==nonce.getCandidate_id()){
+                                                c.setTotal(v.numberVotes);
+                                                flag = 1;
+                                            }
                                         }
-                                    } 
-                                }      
+                                    }      
+                                }
                             }
                         }
                         else{
                             continue;
                         }
                     }
-		}
+        }
             
             
             
             return totalVotos;
             
-        }  
-	public static Block lastBlock()
+        }
+
+		
+	public  Block lastBlock()
 	{
 		return blockchain.get(blockchain.size()-1);	
 	}
 		
 		
-
+	/*
 	public static void main(String[] args) throws Exception 
 	{
             
@@ -143,7 +164,6 @@ public class VoteChain {
                 
 		
 		//create genesis Vote, which sends 1 vote to all wallets:
-	
 		genesisVote = new Vote(voteBase.publicKey, 000000, 1, 0);
 		genesisVote.generateSignature(voteBase.privateKey);
 		genesisVote.voteId = "0";
@@ -153,7 +173,9 @@ public class VoteChain {
 		Block genesis = new Block("0");
 		genesis.addVote(genesisVote);
 		addBlock(genesis);
+		*/
 		
+		/*	
 		//testes
 		long candidateX = StringUtils.generateNonce();
 		System.out.println(candidateX);
@@ -258,8 +280,6 @@ public class VoteChain {
 		
 				
 		
-		
-		
 	}
-    
+	 */
 }

@@ -5,8 +5,11 @@
  */
 package server;
 
+import bitvote.Block;
 import bitvote.SignatureUtils;
 import bitvote.StringUtils;
+import bitvote.Vote;
+import bitvote.VoteChain;
 import bitvote.VotersWallet;
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,9 +37,11 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
     private static final int PORT = 2019;
     private static long nonce;
     private static String publickey;
+    private static VoteChain objBlockChain;
     
     public ServerImpl() throws Exception {
         super(PORT,new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
+	objBlockChain = createBlockchain();
     }
     
     @Override
@@ -269,6 +275,32 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         
         
     }
+	private static VoteChain createBlockchain() throws Exception
+	{
+		VoteChain votechain = new VoteChain();
+		//Create and minning genesis block
+		System.out.println("Creating and Mining Genesis block... ");
+		Block genesis = new Block("0");
+		genesis.addVote(votechain.genesisVote);
+		votechain.addBlock(genesis);
+						
+		return votechain;
+	}
+	
+	@Override
+	public VoteChain getBlockChain()
+	{
+		return objBlockChain;
+	}
+	
+	@Override
+	public void atualizaBlockChain( VoteChain VC)
+	{
+		objBlockChain=VC;
+	}
+	
+	
+	
     
     
     public static void main(String[] args) throws IOException {
@@ -283,6 +315,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             Registry registry = LocateRegistry.createRegistry(PORT,new RMISSLClientSocketFactory(),new RMISSLServerSocketFactory());
 
             ServerImpl obj = new ServerImpl();
+		
+		// para testar a criaçao de blockchain com genesis block
+		/*
+		ArrayList<Block> blockchain = objBlockChain.getBlockchain();
+		blockchain.get(0).ImprimeBlock(0);
+		*/
+		
+		         
 
             // Bind this object instance to the name "HelloServer"
             registry.bind("Server", obj);

@@ -5,6 +5,7 @@
  */
 package server;
 
+import bitvote.VoteChain;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 /**
@@ -18,5 +19,7 @@ public interface Server extends Remote{
     String loginStepOne(String pubkey) throws RemoteException;
     Boolean loginStepTwo(byte[] signNonce) throws RemoteException;
     String requestKey() throws RemoteException;
+    VoteChain getBlockChain() throws RemoteException;
+    void atualizaBlockChain( VoteChain VC) throws RemoteException;
             
 }
