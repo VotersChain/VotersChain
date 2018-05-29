@@ -5,6 +5,7 @@
  */
 package bitvote;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.Security;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.stream.Collectors;
 
 
 
-public class VoteChain {
+public class VoteChain implements Serializable{
 
 	private static ArrayList<Block> blockchain;
 	public  int difficulty;

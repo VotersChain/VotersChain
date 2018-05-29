@@ -5,12 +5,13 @@
  */
 package bitvote;
 
+import java.io.Serializable;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
 
-public class VotersWallet {
+public class VotersWallet implements Serializable{
         public int n_votes;
 	public PrivateKey privateKey;
 	public PublicKey publicKey;

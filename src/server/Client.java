@@ -226,7 +226,7 @@ public class Client {
         Cliente cliente = null;
         
         //Obter a BlockChian no server
-        VoteChain BlockChain = null;
+        VoteChain BlockChain = obj.getBlockChain();
         
         try {
             //Iniciar conecção ao server e criação do cliente

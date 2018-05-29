@@ -56,6 +56,7 @@ public class Cliente {
         BlockChain = BlockChainAtual;
 
         System.out.println("Conectado");
+        System.out.println("Blockchain: "+BlockChain.toString());
         oos = new ObjectOutputStream(s.getOutputStream());
 
         //Ficar à escuta
