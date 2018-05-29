@@ -31,6 +31,13 @@ public class VoteChain implements Serializable{
 		genesisVote = new Vote(voteBase.publicKey, 0000000000, 0, 0);
 		genesisVote.generateSignature(voteBase.privateKey);
 		genesisVote.voteId = "0";	
+	
+		//Create and minning genesis block
+		System.out.println("Creating and Mining Genesis block... ");
+		Block genesis = new Block("0");
+		genesis.addVote(genesisVote);
+		addBlock(genesis);
+				
 	}
 	
 	public ArrayList<Block> getBlockchain() {
@@ -146,6 +153,26 @@ public class VoteChain implements Serializable{
             return totalVotos;
             
         }
+	public int verificaVotoDoCandidato(ArrayList<Nonce> array) {
+
+		PublicKey pk = array.get(0).getPk();
+		int eleicao = array.get(0).getEleicao_id();
+		for (Block item : blockchain) {
+			for (Vote v : item.getData()) {
+				if (v.sender.equals(pk) && v.id_eleicao == eleicao) {
+					if (v.candidateNonce == 0) {
+						return 0;
+					}
+					for (Nonce n : array) {
+						if (n.getNonce_id() == v.candidateNonce) {
+							return n.getCandidate_id();
+						}
+					}
+				}
+			}
+		}
+		return -1;
+	}
 
 		
 	public  Block lastBlock()
