@@ -69,6 +69,26 @@ public class Read {
             }
         }
     }
+    
+    public static int readCandidatesNumber() {
+        while (true) {
+            try {
+
+                int number = Integer.parseInt(readString().trim());
+                if (number <= 0) {
+                    System.out.println("Insira um número positivo!!");
+                    continue;
+                }
+                if(number==1){
+                    System.out.println("Insira um número igual ou maior que 2!");
+                    continue;
+                }
+                return number;
+            } catch (NumberFormatException e) {
+                System.out.println("Número fora do Intrevalo!!!");
+            }
+        }
+    }
 
     public static Double ReadDouble() {
         while (true) {

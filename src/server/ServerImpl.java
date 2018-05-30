@@ -195,8 +195,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
                 lnonce = StringUtils.generateNonce();
                 res2 = stmt.executeQuery("SELECT name FROM Candidate WHERE candidateid=" + res.getInt(1));
 
-                //Se votante já votou lista vai fazia
-                ////////*******************Por implementar***********************//////////////////
+                if(objBlockChain.blockchainHadVoted(StringUtils.getPublicKeyFromString(publickey), electionid)){
+                    bd.closeBD();
+                    return votesList;
+                }
+                    
+                    
                 if (res2.next()) {
                     votesList.add(new Nonce(lnonce, res2.getInt(1), res2.getString(2)));
 
@@ -206,7 +210,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
                 stmt.executeUpdate("Insert Into Nonce(id,candidateid,pubkey) VALUES(" + lnonce + "," + res.getInt(1) + "," + publickey + ");");
             }
             bd.closeBD();
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
             bd.closeBD();
         }
@@ -218,7 +222,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
     @Override
     public String statusOfElection(int electionid) {
         String sRes = "";
-        ResultSet res, res2;
+        ResultSet res = null, res2;
         PublicKey pk = null;
         ArrayList<Nonce> nonceList = new ArrayList<>();
 
@@ -234,9 +238,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             while (res.next()) {
 
                 stmt = bd.returnStmt();
-                res2 = stmt.executeQuery("SELECT * FROM Nonce WHERE candidateid=" + res.getInt(1) + ";");  //////////// And pubkey se res2
+                res2 = stmt.executeQuery("SELECT * FROM Nonce WHERE candidateid=" + res.getInt(1) + " AND pubkey='"+publickey+"';");  //////////// And pubkey se res2
                 i++;
-                while (res2.next()) {
+                if(res2.next()) {
                     try {
                         pk = StringUtils.getPublicKeyFromString(res2.getString(3));
                     } catch (Exception ex) {
@@ -245,6 +249,11 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
                     }
                     nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid));
                 }
+                else{
+                    bd.closeBD();
+                    return sRes;
+                }
+                
             }
             bd.closeBD();
         } catch (SQLException ex) {
@@ -252,13 +261,60 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
             bd.closeBD();
         }
 
-        ////////////////////////////////////////chamar a função do Paulo///////////////////////////////////////////
-        return sRes;
+       int candidateid = objBlockChain.verificaVotoDoCandidato(nonceList);
+       
+       if(candidateid==0){
+           sRes = "O seu voto nulo, foi aprovado!\n";
+           return sRes;
+       }
+       
+       bd = new SQLiteBD();
+       stmt = bd.returnStmt();
+       try{
+           res = stmt.executeQuery("SELECT name FROM Candidate WHERE candidateid=" + candidateid + ";");
+           if(res.next()){
+               sRes="O seu voto no Candidato "+res.getString(2)+", foi aprovado!\n";
+           }
+           bd.closeBD();
+       }
+       catch(SQLException e){
+           System.out.println("statusofElection on Query Candidate for name");
+           bd.closeBD();
+       }
+       
+      // se as Eleições terminaram então retornar também os seu resultados
+      
+      bd = new SQLiteBD();
+      prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE electionid=?;");
+        try {
+            prstmt.setInt(1, electionid);
+            res = prstmt.executeQuery();
+            if(res.next()){
+                if(res.getInt(4)==1){
+                    return sRes;
+                }
+                else{
+                    sRes = sRes+"******Resultado das eleições******\nVotos Nulos ->"+res.getInt(3)+"\n";
+                    prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?;");
+                    prstmt.setInt(1, electionid);
+                    res = prstmt.executeQuery();
+                    while(res.next()){
+                        stmt = bd.returnStmt();
+                        res2 = stmt.executeQuery("SELECT name FROM Nonce WHERE candidateid=" + res.getInt(1)+";");
+                        if(res2.next())
+                            sRes = sRes+res2.getString(1)+" ->"+res.getInt(3)+"\n";
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            System.out.println("statusofElection on Query Election");
+            bd.closeBD();
+        }
+       bd.closeBD();
+      return sRes;
     }
 
     private static void startElections() {
-
-        System.out.print("Nome das eleições:");
 
         SQLiteBD bd = new SQLiteBD();
         Statement stmt = null;
@@ -266,7 +322,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         int electionid = -1;
 
         String insert = "INSERT INTO Election(name,nullvotes,status) VALUES(?,0,1);";
-
+        
+        System.out.print("Nome das eleições:");
         String name = Read.readString();
 
         PreparedStatement prstmt = bd.returnPrStmt(insert);
@@ -290,8 +347,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server{
         }
 
         System.out.print("Insira o número de candidatos:");
-
-        int n = Read.readPositiveInt();
+        int n = Read.readCandidatesNumber();
 
         bd = new SQLiteBD();
         for (int i = 0; i < n; i++) {
