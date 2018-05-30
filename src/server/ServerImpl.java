@@ -184,14 +184,28 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         ResultSet res;
         ResultSet res2;
         Statement stmt = bd.returnStmt();
-        PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=? AND status=1;");
-        int flag = 0; //Verefica se a query retornou resultados
+        
+         PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE electionid=?;");
+        try {
+            prstmt.setInt(1, electionid);
+            res = prstmt.executeQuery();
+            if(!res.next()){
+                bd.closeBD();
+                return null;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
+        }
+        
+        prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?;");
+        
 
         try {
             prstmt.setInt(1, electionid);
             res = prstmt.executeQuery();
             while (res.next()) {
-                flag++;
+         
                 lnonce = StringUtils.generateNonce();
                 res2 = stmt.executeQuery("SELECT * FROM Candidate WHERE candidateid=" + res.getInt(1));
 
@@ -211,9 +225,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                 stmt.executeUpdate("Insert Into Nonce(id,candidateid,pubkey) VALUES(" + lnonce + "," + res.getInt(1) + "," + publickey + ");");
             }
             bd.closeBD();
-            if(flag==0){
-                return null;
-            }
+           
         } catch (Exception ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
             bd.closeBD();
@@ -577,7 +589,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
                 switch (op) {
                     case 1:
-                        //startElections();
+                        startElections();
                         break;
                     case 2:
                         //endElection();
