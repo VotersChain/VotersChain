@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public class VoteChain implements Serializable{
 
-	private static ArrayList<Block> blockchain;
+	public  ArrayList<Block> blockchain;
 	public  int difficulty;
 	public  Vote genesisVote;
 	public VotersWallet voteBase;
@@ -45,8 +45,8 @@ public class VoteChain implements Serializable{
 	}
 	
 
-	public static void setBlockchain(ArrayList<Block> blockchain) {
-		VoteChain.blockchain = blockchain;
+	public void setBlockchain(ArrayList<Block> blockchain) {
+		this.blockchain = blockchain;
 	}
 	
 	
@@ -111,7 +111,7 @@ public class VoteChain implements Serializable{
 		return false;
 	}
         
-	public static ArrayList<Candidato> contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces)
+	public ArrayList<Candidato> contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces)
 	{
             ArrayList<Candidato> totalVotos = new ArrayList<Candidato>();
             totalVotos.add(new Candidato(0, 0));

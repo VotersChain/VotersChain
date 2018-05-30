@@ -18,6 +18,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import server.Server;
 
 /**
@@ -30,16 +32,12 @@ public class Cliente {
     private VoteChain BlockChain;
     private int FLAG_MINING = 3;
 
-    public void makeVote(String sk, String pk) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, Exception {
+    public void makeVote(String sk, String pk, long candidato_nonce, int id_eleicao) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, Exception {
         // Cria uma carteira
         VotersWallet wallet = new VotersWallet(StringUtils.getPrivateKeyFromString(sk), StringUtils.getPublicKeyFromString(pk));
 
-        //Exemplo com um candidato
-        long candidateX = StringUtils.generateNonce();
-        System.out.println(candidateX);
-
         //Votar no candidato x, com a carteira respetiva, id
-        Vote v = wallet.sendVote(candidateX, wallet.n_votes, 1); //testes
+        Vote v = wallet.sendVote(candidato_nonce, wallet.n_votes, id_eleicao); //testes
 
         //indica ao servidor que vai mandar um objeto do tipo voto
         oos.writeObject("send-Voto");
@@ -48,15 +46,25 @@ public class Cliente {
         //Enviar o voto para broadcast
         oos.writeObject(v);
         oos.flush();
-        System.out.println("Mensagem enviada");
+        System.out.println("Voto enviado");
+    }
+    
+    public void sendBlockChain(VoteChain vt) throws IOException{
+        oos.writeObject("send-BlockChain");
+        oos.flush();
+        
+        oos.writeObject(vt);
+        oos.flush();
+        
+        System.out.println("BlockChain enviada");
     }
 
-    public Cliente(String address, VoteChain BlockChainAtual, Server obj) throws IOException, ClassNotFoundException {
+    public Cliente(String address, Server obj) throws IOException, ClassNotFoundException {
         Socket s = new Socket(address, 2222);
-        BlockChain = BlockChainAtual;
+        //BlockChain = obj.getBlockChain();
 
         System.out.println("Conectado");
-        System.out.println("Blockchain: "+BlockChain.toString());
+        //System.out.println("Blockchain: " + BlockChain.getBlockchain().get(0).getHash());
         oos = new ObjectOutputStream(s.getOutputStream());
 
         //Ficar à escuta
@@ -65,24 +73,51 @@ public class Cliente {
             try {
                 ObjectInputStream ois = null;
                 ois = new ObjectInputStream(s.getInputStream());
-                
+                ArrayList<Vote> lista_votos = new ArrayList<Vote>();
+                Vote voto = null;
+                VoteChain getBLOCKCHAIN = null;
+
                 while (true) {
                     //Identificar qual o obejcto recebido
                     String ObjectType = (String) ois.readObject();
 
                     //Se voto recebido
                     if (ObjectType.equals("send-Voto")) {
-                        System.out.println("Cliente: Recebe Voto");                    
+                        System.out.println("Cliente: Recebe Voto");
+                        voto = (Vote) ois.readObject();
+                        lista_votos.add(voto);
+                        
+                        if(lista_votos.size() == FLAG_MINING){
+                            //minar
+                            Block bloco = new Block(BlockChain.lastBlock().getHash());
+                            
+                            for (Vote objteto_voto : lista_votos) {
+                                bloco.addVote(objteto_voto);
+                            }
+                            //Limpar flag mining
+                            lista_votos.clear();
+                            
+                            BlockChain.addBlock(bloco);
+                            
+                            //Autoridade de confiança
+                            obj.atualizaBlockChain(BlockChain);
+                            
+                            //Broadcast pelos votantes
+                            sendBlockChain(BlockChain);                        
+                        }
                         
                     } //Se BlockChain recebida
                     else if (ObjectType.equals("send-BlockChain")) {
                         System.out.println("Cliente: Recebe BlockChain");
                         
-                        //Atualizar a BlockChain do Server
-                        //obj.
+                        //Recebo a BlockChain 
+                        getBLOCKCHAIN = (VoteChain) ois.readObject();
                         
-                        //Fazer Broadcast da BlockChain pelos restantes clientes
-                        
+                        //Valida a BlockChain
+                        if(getBLOCKCHAIN.isChainValid()==true){
+                            //Se a blockchain recebida for válida substituir a atual
+                            BlockChain = getBLOCKCHAIN;
+                        }
                     }
                 }
             } catch (IOException ex) {
@@ -92,6 +127,8 @@ public class Cliente {
             } catch (ClassNotFoundException ex) {
                 System.out.println("Server off");
                 //Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (Exception ex) {
+                Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         ).start();

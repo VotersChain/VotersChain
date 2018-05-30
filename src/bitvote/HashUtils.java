@@ -5,6 +5,7 @@
  */
 package bitvote;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -13,7 +14,7 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author paulo
  */
-public class HashUtils {
+public class HashUtils{
     public static String hashFuncSHA256(String input){
         try {
                 MessageDigest digest = MessageDigest.getInstance("SHA-256");

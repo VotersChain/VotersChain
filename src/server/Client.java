@@ -225,12 +225,13 @@ public class Client {
     public static void menu2(Server obj) throws NoSuchProviderException, InvalidKeySpecException, Exception {
         Cliente cliente = null;
         
-        //Obter a BlockChian no server
-        VoteChain BlockChain = obj.getBlockChain();
+        //Erro -------------------------------------------------------------------------------------------????
+        VoteChain blockkk = obj.getBlockChain();
         
+        blockkk.getBlockchain().get(0).ImprimeBlock(0);
         try {
             //Iniciar conecção ao server e criação do cliente
-            cliente = new Cliente(Host, BlockChain, obj);
+            cliente = new Cliente(Host, obj);
 
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
@@ -245,13 +246,20 @@ public class Client {
             Scanner in = new Scanner(System.in);
             int op = in.nextInt();
             switch (op) {
-                case 1: {
-                    //Lista de candidatos a votação
-                    //Servidor nonce
-                    //value (nº de votos)
-                    //id da eleição 
-                    //Blockchain só com genesis vote
-                    cliente.makeVote(chavePrivada, chavePublica);
+                case 1: {                  
+                    //Selecionamos a eleição
+                    
+                    //Se votante já votou na eleição selecionada a lista de candidatos vem vazia
+                    
+                    //mandamos id para o server e esteb retorna a lista com os nonces(candidato, id)
+                    
+                    //Caso nao tenha votado obtemos a lista de nonces
+                    //Selecionamos o candidato
+                    long nonce_candidato=0;
+                    int id_eleicao=1;
+                    long candidateX = StringUtils.generateNonce();
+
+                    cliente.makeVote(chavePrivada, chavePublica, candidateX, id_eleicao);
                 }
                 break;
                 case 2: {

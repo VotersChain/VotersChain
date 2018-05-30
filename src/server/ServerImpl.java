@@ -405,7 +405,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             bd.closeBD();
         }
 
-        ArrayList<Candidato> candidatesList = VoteChain.contaVotos(electionid, i + 1, nonceList);
+        ArrayList<Candidato> candidatesList = objBlockChain.contaVotos(electionid, i + 1, nonceList);
 
         //inserir os resultados na bd
         bd = new SQLiteBD();
