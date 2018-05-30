@@ -293,7 +293,13 @@ public class Client {
                 }
                 break;
                 case 2: {
-
+                    String eleicoes = obj.sendAllElectionsList();
+                    if (eleicoes.equals("")){
+                        System.out.println("Não existem eleições de momento!");
+                        break;
+                    }
+                    System.out.println("*********************************\nLista de Eleições\n");
+                    System.out.println(eleicoes);
                 }
                 break;
                 case 0: {
