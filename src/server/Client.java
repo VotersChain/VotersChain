@@ -6,6 +6,7 @@
 package server;
 
 import bitvote.AES;
+import bitvote.Nonce;
 import bitvote.SignatureUtils;
 import bitvote.StringUtils;
 import bitvote.VoteChain;
@@ -25,6 +26,7 @@ import java.rmi.registry.Registry;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -246,18 +248,48 @@ public class Client {
             switch (op) {
                 case 1: {                  
                     //Selecionamos a eleição
+                    String eleicoes = obj.sendElectionsList();
+                    if (eleicoes.equals("")){
+                        System.out.println("Não existem eleições de momento!");
+                        break;
+                    }
+                    System.out.println("*********************************\nLista de Eleições\n");
+                    System.out.println(eleicoes);
                     
-                    //Se votante já votou na eleição selecionada a lista de candidatos vem vazia
+                    System.out.print("Selecionar eleição (ID): ");
+                    int id_election = Read.readPositiveInt();
                     
-                    //mandamos id para o server e esteb retorna a lista com os nonces(candidato, id)
+                    ArrayList<Nonce> list_nonces = obj.sendVotesList(id_election);
                     
-                    //Caso nao tenha votado obtemos a lista de nonces
-                    //Selecionamos o candidato
-                    long nonce_candidato=0;
-                    int id_eleicao=1;
-                    long candidateX = StringUtils.generateNonce();
+                    //Se vier vazia já votou
+                    if(list_nonces.isEmpty()){
+                        System.out.println("O seu voto já foi efetuado para a eleição selecionada! Por favor, aguarde pelo resultdo.");
+                        break;
+                    }
+                    if(list_nonces==null){
+                        System.out.println("Eleição não existe ou já terminou!");
+                        break;
+                    }
 
-                    cliente.makeVote(chavePrivada, chavePublica, candidateX, id_eleicao);
+                    System.out.println("*********************************\nLista de Candidatos\n");
+                    for (Nonce n : list_nonces) {
+                        System.out.println("Nome: "+n.getNome()+" ID: "+n.getCandidate_id());
+                    }
+                    System.out.print("Votar no Candidato (ID): ");
+                    int candidato = Read.readPositiveInt();
+                    
+                    long flag = 0; //verifica se o id escolhido corresponde a um dos candidatos
+                    for (Nonce n : list_nonces) {
+                        if(n.getCandidate_id() == candidato){
+                            flag = n.getNonce_id();
+                        }
+                    }
+                    if(flag!=0){
+                        cliente.makeVote(chavePrivada, chavePublica, flag, id_election);
+                    }
+                    else{
+                        cliente.makeVote(chavePrivada, chavePublica, 0, id_election);
+                    }                  
                 }
                 break;
                 case 2: {

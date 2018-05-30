@@ -87,6 +87,13 @@ public class Cliente {
                     if (ObjectType.equals("send-Voto")) {
                         System.out.println("Cliente: Recebe Voto");
                         voto = (Vote) ois.readObject();
+                        
+                        //Verificar se o votante já votou
+                        if(BlockChain.nonMinedBlockhadVoted(voto.getSender(), lista_votos, voto.getId_eleicao()) == true){
+                            System.out.println("Já votou");
+                            break;
+                        }
+                        System.out.println("Ainda não votou");
                         lista_votos.add(voto);
                         
                         if(lista_votos.size() == FLAG_MINING){

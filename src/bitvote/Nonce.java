@@ -5,13 +5,14 @@
  */
 package bitvote;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 
 /**
  *
  * @author paulo
  */
-public class Nonce {
+public class Nonce implements Serializable{
     private long nonce_id;
     private PublicKey pk;
     private int candidate_id;
