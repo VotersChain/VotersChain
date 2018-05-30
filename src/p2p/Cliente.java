@@ -48,25 +48,25 @@ public class Cliente {
         oos.flush();
         System.out.println("Voto enviado");
     }
-    
-    public void sendBlockChain(VoteChain vt) throws IOException{
+
+    public void sendBlockChain(VoteChain vt) throws IOException {
         oos.writeObject("send-BlockChain");
         oos.flush();
-        
+
         oos.writeObject(vt);
         oos.flush();
-        
+
         System.out.println("BlockChain enviada");
     }
 
     public Cliente(String address, Server obj) throws IOException, ClassNotFoundException {
         Socket s = new Socket(address, 2222);
-        
-        BlockChain = obj.getBlockChain();  
+
+        BlockChain = obj.getBlockChain();
         BlockChain.getBlockchain().get(0).ImprimeBlock(0);
 
         System.out.println("Conectado");
-        
+
         oos = new ObjectOutputStream(s.getOutputStream());
 
         //Ficar à escuta
@@ -87,50 +87,49 @@ public class Cliente {
                     if (ObjectType.equals("send-Voto")) {
                         System.out.println("Cliente: Recebe Voto");
                         voto = (Vote) ois.readObject();
-                        
+
                         //Verificar se o votante já votou
-                        if(BlockChain.nonMinedBlockhadVoted(voto.getSender(), lista_votos, voto.getId_eleicao()) == true){
+                        if ((BlockChain.nonMinedBlockhadVoted(voto.getSender(), lista_votos, voto.getId_eleicao()) == true) ||(BlockChain.blockchainHadVoted(voto.getSender(), voto.getId_eleicao())==true) ) {
                             System.out.println("Já votou");
-                            break;
-                        }
-                        System.out.println("Ainda não votou");
-                        lista_votos.add(voto);
-                        
-                        if(lista_votos.size() == FLAG_MINING){
-                            //minar
-                            System.out.println("Minar: ");
-                            System.out.println("BlockChain: "+ BlockChain.getBlockchain().size());
-                            Block bloco = new Block(BlockChain.lastBlock().getHash());
-                            
-                            for (Vote objteto_voto : lista_votos) {
-                                bloco.addVote(objteto_voto);
+                        } else {
+                            System.out.println("Ainda não votou");
+                            lista_votos.add(voto);
+
+                            if (lista_votos.size() == FLAG_MINING) {
+                                //minar
+                                System.out.println("Minar: ");
+                                System.out.println("BlockChain: " + BlockChain.getBlockchain().size());
+                                Block bloco = new Block(BlockChain.lastBlock().getHash());
+
+                                for (Vote objteto_voto : lista_votos) {
+                                    bloco.addVote(objteto_voto);
+                                }
+                                //Limpar flag mining
+                                lista_votos.clear();
+
+                                BlockChain.addBlock(bloco);
+
+                                //Autoridade de confiança
+                                //obj.atualizaBlockChain(BlockChain);
+                                //Broadcast pelos votantes
+                                sendBlockChain(BlockChain);
                             }
-                            //Limpar flag mining
-                            lista_votos.clear();
-                            
-                            BlockChain.addBlock(bloco);
-                            
-                            //Autoridade de confiança
-                            //obj.atualizaBlockChain(BlockChain);
-                            
-                            //Broadcast pelos votantes
-                            sendBlockChain(BlockChain);                        
                         }
-                        
+
                     } //Se BlockChain recebida
                     else if (ObjectType.equals("send-BlockChain")) {
                         System.out.println("Cliente: Recebe BlockChain");
-                        
+
                         //Recebo a BlockChain 
                         getBLOCKCHAIN = (VoteChain) ois.readObject();
-                        
+
                         //Valida a BlockChain
-                        if(getBLOCKCHAIN.isChainValid()==true){
+                        if (getBLOCKCHAIN.isChainValid() == true) {
                             //Se a blockchain recebida for válida substituir a atual
                             BlockChain = getBLOCKCHAIN;
-                            
+
                             System.out.println("Mostra BlockChian");
-                            for (int i=0; i<BlockChain.getBlockchain().size(); i++) {
+                            for (int i = 0; i < BlockChain.getBlockchain().size(); i++) {
                                 BlockChain.getBlockchain().get(i).ImprimeBlock(i);
                             }
                         }
