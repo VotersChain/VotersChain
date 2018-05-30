@@ -43,7 +43,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     public ServerImpl() throws Exception {
         super(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
-        objBlockChain = createBlockchain();
+   
     }
 
     @Override
@@ -438,7 +438,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         bd.closeBD();
 
     }
-
+/*
     private static VoteChain createBlockchain() throws Exception {
         VoteChain votechain = new VoteChain();
         //Create and minning genesis block
@@ -449,7 +449,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         return votechain;
     }
-
+*/
     @Override
     public VoteChain getBlockChain() {
         return objBlockChain;
@@ -472,12 +472,15 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             Registry registry = LocateRegistry.createRegistry(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
 
             ServerImpl obj = new ServerImpl();
+			
+			
+			
+	   objBlockChain = new VoteChain();
+	   System.out.println(objBlockChain.lastBlock().getHash());
 
-            // para testar a criaçao de blockchain com genesis block
-            /*
-		ArrayList<Block> blockchain = objBlockChain.getBlockchain();
-		blockchain.get(0).ImprimeBlock(0);
-             */
+			
+				
+			
             // Bind this object instance to the name "HelloServer"
             registry.bind("Server", obj);
 
