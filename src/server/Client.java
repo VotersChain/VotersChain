@@ -225,10 +225,6 @@ public class Client {
     public static void menu2(Server obj) throws NoSuchProviderException, InvalidKeySpecException, Exception {
         Cliente cliente = null;
         
-        //Erro -------------------------------------------------------------------------------------------????
-        VoteChain blockkk = obj.getBlockChain();
-        
-        blockkk.getBlockchain().get(0).ImprimeBlock(0);
         try {
             //Iniciar conecção ao server e criação do cliente
             cliente = new Cliente(Host, obj);

@@ -61,10 +61,12 @@ public class Cliente {
 
     public Cliente(String address, Server obj) throws IOException, ClassNotFoundException {
         Socket s = new Socket(address, 2222);
-        //BlockChain = obj.getBlockChain();
+        
+        VoteChain blockkk = obj.getBlockChain();  
+        blockkk.getBlockchain().get(0).ImprimeBlock(0);
 
         System.out.println("Conectado");
-        //System.out.println("Blockchain: " + BlockChain.getBlockchain().get(0).getHash());
+        
         oos = new ObjectOutputStream(s.getOutputStream());
 
         //Ficar à escuta

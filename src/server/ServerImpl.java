@@ -78,8 +78,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         VotersWallet wallet = new VotersWallet(); //Criar uma carteira
         keys = StringUtils.getStringFromKey(wallet.publicKey) + "," + StringUtils.getStringFromKey(wallet.privateKey); // Retorna um par de chaves ao votante
-
-        bd = new SQLiteBD(); // Insere a chave publica do votante e o seu nome na bd       
+     
         String insert = "INSERT INTO User(pubkey,name,idnumber) VALUES(?,?,?);";
         prstmt = bd.returnPrStmt(insert);
         try {
