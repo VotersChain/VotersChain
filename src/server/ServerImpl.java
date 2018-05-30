@@ -233,6 +233,29 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         return votesList;
     }
+    
+    @Override
+    public String sendAllElectionsList(){
+        
+        String electionsList = "";
+        SQLiteBD bd = new SQLiteBD();
+        Statement stmt = bd.returnStmt();
+        ResultSet res;
+        try {
+            res = stmt.executeQuery("SELECT * FROM Election;");
+            while (res.next()) {
+                electionsList = electionsList + "ID das Eleições: " + res.getInt(1) + "\n"
+                        + "Nome: " + res.getString(2) + "\n"
+                        + "-------------------------------------------\n";
+            }
+            bd.closeBD();
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
+        }
+
+        return electionsList;
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -305,7 +328,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             if (res.next()) {
                 if (res.getInt(4) == 1) {
                     return sRes;
-                } else {
+                } 
+                else {
                     sRes = sRes + "******Resultado das eleições******\nVotos Nulos ->" + res.getInt(3) + "\n";
                     prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?;");
                     prstmt.setInt(1, electionid);

@@ -21,6 +21,7 @@ public interface Server extends Remote{
     Boolean loginStepTwo(byte[] signNonce) throws RemoteException;
     String requestKey() throws RemoteException;
     String sendElectionsList() throws RemoteException;
+    String sendAllElectionsList() throws RemoteException;
     ArrayList<Nonce> sendVotesList(int electionid) throws RemoteException;
     String statusOfElection(int electionid)  throws RemoteException;
     
