@@ -185,7 +185,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         ResultSet res2;
         Statement stmt = bd.returnStmt();
         
-         PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE electionid=?;");
+         PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE electionid=? AND status=1;");
         try {
             prstmt.setInt(1, electionid);
             res = prstmt.executeQuery();
