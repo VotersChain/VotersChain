@@ -207,7 +207,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             while (res.next()) {
          
                 lnonce = StringUtils.generateNonce();
-                res2 = stmt.executeQuery("SELECT * FROM Candidate WHERE candidateid=" + res.getInt(1));
+                res2 = stmt.executeQuery("SELECT * FROM Candidate WHERE id=" + res.getInt(1));
 
                 if (objBlockChain.blockchainHadVoted(StringUtils.getPublicKeyFromString(publickey), electionid)) {
                     bd.closeBD();
