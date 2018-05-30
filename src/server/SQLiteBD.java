@@ -158,6 +158,7 @@ public class SQLiteBD {
             sql = "CREATE TABLE IF NOT EXISTS Election "+
                   "(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,"+
                   "name NVARCHAR(100) NOT NULL," +
+                  "nullvotes INTEGER NOT NULL,"+
                   "status INTEGER NOT NULL"
                     + ");"  ;
              
