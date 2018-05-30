@@ -53,17 +53,23 @@ public class SQLiteBD {
         if (fBD.exists()) {
             encryptionDB('d');
         }
+        
+        try {
+            Class.forName("org.sqlite.JDBC");
+            c = DriverManager.getConnection("jdbc:sqlite:BitVote.db");
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(SQLiteBD.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(SQLiteBD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
     }
     
     //returna o statement da bd
     public Statement returnStmt(){
         
-        c = null;
         stmt = null;
         try{
-   
-            Class.forName("org.sqlite.JDBC");
-            c= DriverManager.getConnection("jdbc:sqlite:BitVote.db");
             stmt = c.createStatement();
             
         }catch(Exception e){
@@ -76,12 +82,9 @@ public class SQLiteBD {
     //returna o preparedstatement da bd
     public PreparedStatement returnPrStmt(String sql){
         
-        c = null;
         prstmt = null;
         try{
-   
-            Class.forName("org.sqlite.JDBC");
-            c= DriverManager.getConnection("jdbc:sqlite:BitVote.db");
+  
             prstmt = c.prepareStatement(sql);
             
         }catch(Exception e){
