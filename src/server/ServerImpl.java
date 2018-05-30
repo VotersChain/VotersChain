@@ -62,11 +62,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         String query = "SELECT * FROM User WHERE idnumber=?;";
         PreparedStatement prstmt = bd.returnPrStmt(query);
         ResultSet res = null;
-        bd.closeBD();
+       
         try {
             prstmt.setLong(1, idNumber);
             res = prstmt.executeQuery();
             if (res.next()) {
+	       bd.closeBD();
                 return keys;
             }
 
@@ -109,8 +110,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             prstmt.setString(1, pubkey);
             res = prstmt.executeQuery();
             //senao existe retorna ""
-            bd.closeBD();
+            
             if (!res.next()) {
+	       bd.closeBD();
                 return stringNonce;
             }
 
@@ -472,15 +474,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             Registry registry = LocateRegistry.createRegistry(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
 
             ServerImpl obj = new ServerImpl();
-			
-			
-			
-	   objBlockChain = new VoteChain();
-	   System.out.println(objBlockChain.lastBlock().getHash());
-
-			
-				
-			
+								
             // Bind this object instance to the name "HelloServer"
             registry.bind("Server", obj);
 
@@ -496,6 +490,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             SQLiteBD bd = new SQLiteBD();
             bd.createBD();
         }
+	
+	try {
+		objBlockChain = new VoteChain();
+	} catch (Exception ex) {
+		//Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+		System.out.println("Erro ao criar a blockchain");
+	}
+	System.out.println(objBlockChain.lastBlock().getHash());
 
         new Thread(()
                 -> {
