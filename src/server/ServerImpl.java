@@ -222,7 +222,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                 }
                 stmt.close();
                 stmt = bd.returnStmt();
-                stmt.executeUpdate("Insert Into Nonce(id,candidateid,pubkey) VALUES(" + lnonce + "," + res.getInt(1) + "," + publickey + ");");
+                stmt.executeUpdate("Insert Into Nonce(id,candidateid,pubkey) VALUES(" + lnonce + "," + res.getInt(1) + ",'" + publickey + "');");
             }
             bd.closeBD();
            
