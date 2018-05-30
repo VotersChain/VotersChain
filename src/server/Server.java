@@ -15,7 +15,6 @@ import java.util.ArrayList;
  * @author jferr
  */
 public interface Server extends Remote{
-    
     String sayHello() throws RemoteException;
     String regist(String name,long idNumber) throws RemoteException;
     String loginStepOne(String pubkey) throws RemoteException;
@@ -27,5 +26,4 @@ public interface Server extends Remote{
     
     VoteChain getBlockChain() throws RemoteException;
     void atualizaBlockChain( VoteChain VC) throws RemoteException;
-            
 }

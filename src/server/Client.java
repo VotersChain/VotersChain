@@ -100,13 +100,15 @@ public class Client {
             byte[] encoded = Base64.getEncoder().encode(cripto);
             fout.write(encoded);
             fout.close();
-
+            
             //(Servidor -> Cliente ) nonce
             String nonce = obj.loginStepOne(pk);
 
             //(Cliente  -> Servidor) Assinar o nonce encia
             byte[] signNonce = SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(sk));
-
+            System.out.println("PK: "+pk);
+            System.out.println("nonce "+nonce);
+            System.out.println("Valida: "+SignatureUtils.verifyString(nonce, signNonce, StringUtils.getPublicKeyFromString(chavePublica)));
             //(Servidor -> Cliente ) Valida a assinatura
             boolean isLoged = obj.loginStepTwo(signNonce);
 

@@ -5,12 +5,10 @@
  */
 package server;
 
-import bitvote.Block;
 import bitvote.Candidato;
 import bitvote.Nonce;
 import bitvote.SignatureUtils;
 import bitvote.StringUtils;
-import bitvote.Vote;
 import bitvote.VoteChain;
 import bitvote.VotersWallet;
 import java.io.File;
@@ -34,56 +32,57 @@ import p2p.Servidor;
  *
  * @author jferr
  */
-public class ServerImpl extends UnicastRemoteObject implements Server {
-
+public class ServerImpl extends UnicastRemoteObject implements Server{
+    
     private static final int PORT = 2019;
     private static long nonce;
     private static String publickey;
     private static VoteChain objBlockChain;
-
+    
     public ServerImpl() throws Exception {
-        super(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
-   
+        super(PORT,new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
     }
-
+    
     @Override
-    public String sayHello() {
+    public String sayHello(){
         return "Hello World!";
     }
-
-    @Override
+    
+    @Override 
     //Registo dos votantes
-    public String regist(String name, long idNumber) {
-
+    public String regist(String name,long idNumber){
+        
+        
         String keys = "";
-
+        
         //Se já está registado retorna ""
         SQLiteBD bd = new SQLiteBD();
         String query = "SELECT * FROM User WHERE idnumber=?;";
         PreparedStatement prstmt = bd.returnPrStmt(query);
         ResultSet res = null;
-       
         try {
-            prstmt.setLong(1, idNumber);
+            prstmt.setLong(1,idNumber);
             res = prstmt.executeQuery();
-            if (res.next()) {
-	       bd.closeBD();
+            if(res.next()){
+                bd.closeBD();
                 return keys;
             }
+            
 
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
             bd.closeBD();
         }
-
+        
         VotersWallet wallet = new VotersWallet(); //Criar uma carteira
         keys = StringUtils.getStringFromKey(wallet.publicKey) + "," + StringUtils.getStringFromKey(wallet.privateKey); // Retorna um par de chaves ao votante
-     
+        
+        //bd = new SQLiteBD(); // Insere a chave publica do votante e o seu nome na bd       
         String insert = "INSERT INTO User(pubkey,name,idnumber) VALUES(?,?,?);";
         prstmt = bd.returnPrStmt(insert);
         try {
             prstmt.setString(1, StringUtils.getStringFromKey(wallet.publicKey));
-            prstmt.setString(2, name);
+            prstmt.setString(2,name);
             prstmt.setLong(3, idNumber);
             prstmt.executeUpdate();
             bd.closeBD(); //fecha bd e encripta
@@ -91,15 +90,15 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
             bd.closeBD();
         }
-
+        
         return keys;
     }
-
+    
     @Override
-    public String loginStepOne(String pubkey) {
+    public String loginStepOne(String pubkey){
         String stringNonce = "";
         publickey = pubkey;
-
+        
         //verifica se a chave publica existe na bd
         SQLiteBD bd = new SQLiteBD();
         String query = "SELECT * FROM User WHERE pubkey=?;";
@@ -109,11 +108,11 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             prstmt.setString(1, pubkey);
             res = prstmt.executeQuery();
             //senao existe retorna ""
-            
-            if (!res.next()) {
-	       bd.closeBD();
+            if(!res.next()){
+                bd.closeBD();
                 return stringNonce;
             }
+            bd.closeBD();
 
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -123,21 +122,21 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         //gera nonce
         nonce = StringUtils.generateNonce();
         stringNonce = String.valueOf(nonce);
-
+        
         return stringNonce;
     }
-
+    
     @Override
-    public Boolean loginStepTwo(byte[] signNonce) {
-
+    public Boolean loginStepTwo(byte[] signNonce){
+        
         PublicKey pk = null;
         try {
             pk = StringUtils.getPublicKeyFromString(publickey);
-        } catch (Exception ex) {
+        } catch (Exception ex){
             System.out.println(ex.getMessage());
-        }
-
-        boolean isLoged = false;
+        } 
+             
+        boolean isLoged=false;
         try {
             // verifica o nonce assinado
             isLoged = SignatureUtils.verifyString(String.valueOf(nonce), signNonce, pk);
@@ -146,11 +145,11 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         }
 
         return isLoged;
-
+    
     }
-
+    
     @Override
-    public String requestKey() {
+    public String requestKey(){
         return "af1129c47f20f6394915309852624a8b9202abdeb6b696e540b41b5b4e9442b8";
     }
 
@@ -535,6 +534,5 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             }
         }
         ).start();
-
     }
 }

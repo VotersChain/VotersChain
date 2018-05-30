@@ -30,7 +30,7 @@ public class Cliente {
 
     private ObjectOutputStream oos;
     private VoteChain BlockChain;
-    private int FLAG_MINING = 3;
+    private int FLAG_MINING = 2;
 
     public void makeVote(String sk, String pk, long candidato_nonce, int id_eleicao) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, Exception {
         // Cria uma carteira
@@ -62,8 +62,8 @@ public class Cliente {
     public Cliente(String address, Server obj) throws IOException, ClassNotFoundException {
         Socket s = new Socket(address, 2222);
         
-        VoteChain blockkk = obj.getBlockChain();  
-        blockkk.getBlockchain().get(0).ImprimeBlock(0);
+        BlockChain = obj.getBlockChain();  
+        BlockChain.getBlockchain().get(0).ImprimeBlock(0);
 
         System.out.println("Conectado");
         
@@ -91,6 +91,8 @@ public class Cliente {
                         
                         if(lista_votos.size() == FLAG_MINING){
                             //minar
+                            System.out.println("Minar: ");
+                            System.out.println("BlockChain: "+ BlockChain.getBlockchain().size());
                             Block bloco = new Block(BlockChain.lastBlock().getHash());
                             
                             for (Vote objteto_voto : lista_votos) {
@@ -102,7 +104,7 @@ public class Cliente {
                             BlockChain.addBlock(bloco);
                             
                             //Autoridade de confiança
-                            obj.atualizaBlockChain(BlockChain);
+                            //obj.atualizaBlockChain(BlockChain);
                             
                             //Broadcast pelos votantes
                             sendBlockChain(BlockChain);                        
@@ -119,6 +121,11 @@ public class Cliente {
                         if(getBLOCKCHAIN.isChainValid()==true){
                             //Se a blockchain recebida for válida substituir a atual
                             BlockChain = getBLOCKCHAIN;
+                            
+                            System.out.println("Mostra BlockChian");
+                            for (int i=0; i<BlockChain.getBlockchain().size(); i++) {
+                                BlockChain.getBlockchain().get(i).ImprimeBlock(i);
+                            }
                         }
                     }
                 }
