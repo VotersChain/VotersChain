@@ -108,7 +108,7 @@ public class Cliente {
                                 }
                                 //Limpar flag mining
                                 lista_votos.clear();
-
+                                
                                 BlockChain.addBlock(bloco);
                                 
                                 //------------------------------------------
