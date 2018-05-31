@@ -110,7 +110,7 @@ public class Cliente {
                                 BlockChain.addBlock(bloco);
 
                                 //Autoridade de confiança
-                                //obj.atualizaBlockChain(BlockChain);
+                                obj.atualizaBlockChain(BlockChain);
                                 //Broadcast pelos votantes
                                 sendBlockChain(BlockChain);
                             }
