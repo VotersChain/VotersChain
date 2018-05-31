@@ -475,16 +475,20 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         }
         bd.closeBD();
         
-        ArrayList<Candidato> winer = winerCount(candidates);
+        if(!candidates.isEmpty()){
+            
+            ArrayList<Candidato> winer = winerCount(candidates);
+
+            if (winer.size() > 1) {
+                sRes = sRes + "\n*****************Empate*****************\n";
+                for (Candidato c : winer) {
+                    sRes = sRes + c.getName() + "\n";
+                }
+            } else {
+                sRes = sRes + "\n****************Vencedor****************\n" + winer.get(0).getName();
+            }
+        }
         
-        if(winer.size()>1){
-            sRes = sRes + "\n*****************Empate*****************\n";
-            for(Candidato c : winer)
-                sRes = sRes + c.getName() +"/n";
-        }
-        else{
-           sRes = sRes + "\n****************Vencedor****************\n" + winer.get(0).getName();
-        }
         
         return sRes;
     }
