@@ -44,6 +44,7 @@ public class Client {
     private static String chavePublica;
     private static String chavePrivada;
     private static String Host = "DESKTOP-C38TKIF";
+    //private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
     // Édi - Asus-Pc
 

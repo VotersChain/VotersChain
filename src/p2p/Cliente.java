@@ -89,7 +89,7 @@ public class Cliente {
                         voto = (Vote) ois.readObject();
 
                         //Verificar se o votante já votou
-                        if ((BlockChain.nonMinedBlockhadVoted(voto.getSender(), lista_votos, voto.getId_eleicao()) == true) ||(BlockChain.blockchainHadVoted(voto.getSender(), voto.getId_eleicao())==true) ) {
+                        if ((BlockChain.nonMinedBlockhadVoted(voto.getSender(), lista_votos, voto.getId_eleicao()) == true) || (BlockChain.blockchainHadVoted(voto.getSender(), voto.getId_eleicao())==true) ) {
                             System.out.println("Já votou");
                         } else {
                             System.out.println("Ainda não votou");
@@ -127,11 +127,16 @@ public class Cliente {
                         if (getBLOCKCHAIN.isChainValid() == true) {
                             //Se a blockchain recebida for válida substituir a atual
                             BlockChain = getBLOCKCHAIN;
-
+                            System.out.println("BlockChain Atualizada");
+                            
+                            //Limpar flag mining
+                            lista_votos.clear();
+                            /*
                             System.out.println("Mostra BlockChian");
                             for (int i = 0; i < BlockChain.getBlockchain().size(); i++) {
                                 BlockChain.getBlockchain().get(i).ImprimeBlock(i);
                             }
+                            */
                         }
                     }
                 }
