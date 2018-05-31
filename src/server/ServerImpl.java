@@ -42,7 +42,6 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     public ServerImpl() throws Exception {
         super(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
-        System.setSecurityManager(new SecurityManager());
     }
 
     @Override
@@ -565,16 +564,19 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     public static void main(String[] args) throws IOException {
 
-       
+        // Create and install a security manager
+        if (System.getSecurityManager() == null) {
+            System.setSecurityManager(new SecurityManager());
+        }
 
         try {
             // Create SSL-based registry
-            java.rmi.registry.LocateRegistry.createRegistry(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
+            Registry registry = LocateRegistry.createRegistry(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
 
             ServerImpl obj = new ServerImpl();
 
             // Bind this object instance to the name "HelloServer"
-            Naming.rebind("Server", obj);
+            registry.rebind("rmi://192.168.1.93/Server", obj);
          
 
             System.out.println("Server bound in registry");

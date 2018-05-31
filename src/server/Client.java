@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -338,8 +337,8 @@ public class Client {
     public static void main(String[] args) {
         try {
             System.setSecurityManager(new SecurityManager());
-            
-            Server obj = (Server) Naming.lookup("Server");
+            Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
+            Server obj = (Server) registry.lookup("rmi://192.168.1.93/Server");
 
             String menu1 = "***********************************\n1-Login\n2-Registar\n0-Sair\n-->";
 
