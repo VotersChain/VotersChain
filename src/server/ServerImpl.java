@@ -309,7 +309,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         bd = new SQLiteBD();
         stmt = bd.returnStmt();
         try {
-            res = stmt.executeQuery("SELECT name FROM Candidate WHERE candidateid=" + candidateid + ";");
+            res = stmt.executeQuery("SELECT name FROM Candidate WHERE id=" + candidateid + ";");
             if (res.next()) {
                 sRes = "O seu voto no Candidato " + res.getString(2) + ", foi aprovado!\n";
             }
@@ -321,7 +321,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         // se as Eleições terminaram então retornar também os seu resultados
         bd = new SQLiteBD();
-        prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE electionid=?;");
+        prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE id=?;");
         try {
             prstmt.setInt(1, electionid);
             res = prstmt.executeQuery();
