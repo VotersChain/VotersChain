@@ -13,6 +13,7 @@ import bitvote.VoteChain;
 import bitvote.VotersWallet;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -35,12 +36,13 @@ import p2p.Servidor;
 public class ServerImpl extends UnicastRemoteObject implements Server {
 
     private static final int PORT = 2019;
-    private long nonce;
-    private String publickey;
+    private static long nonce;
+    private static String publickey;
     private static VoteChain objBlockChain;
 
     public ServerImpl() throws Exception {
         super(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
+        System.setSecurityManager(new SecurityManager());
     }
 
     @Override
@@ -563,19 +565,16 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     public static void main(String[] args) throws IOException {
 
-        // Create and install a security manager
-        if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new SecurityManager());
-        }
+       
 
         try {
             // Create SSL-based registry
-            Registry registry = LocateRegistry.createRegistry(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
+            java.rmi.registry.LocateRegistry.createRegistry(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
 
             ServerImpl obj = new ServerImpl();
 
             // Bind this object instance to the name "HelloServer"
-            registry.rebind("Server", obj);
+            Naming.rebind("Server", obj);
          
 
             System.out.println("Server bound in registry");
