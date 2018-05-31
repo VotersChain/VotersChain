@@ -54,7 +54,6 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     
     @Override
     public byte[] signNonce(String nonce){
-        System.out.println("Entrei SignNonce");
         try {
             return SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(chavePrivada));
         } catch (Exception ex) {
@@ -70,11 +69,10 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     public static int Registo(Server obj) {
         try {
             //Pedir o Nome e o ID ao Utilizador
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
             System.out.print("Nome: ");
-            String sNome = in.readLine();
+            String sNome = Read.readString();
             System.out.print("Identificador: ");
-            long lID = Long.parseLong(in.readLine());
+            long lID = Read.readLong();
 
             //(Cliente  -> Servidor) Nome - Id
             //(Servidor -> Cliente ) Chaves pk, sk
@@ -92,7 +90,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             String pk, sk;
             pk = keys[0];
             sk = keys[1];
-            System.out.println("SK: " + sk);
+
             chavePublica = pk;
             chavePrivada = sk;
 
@@ -123,10 +121,9 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             fout.write(encoded);
             fout.close();
             
-            System.out.println("antes");
             remote_client = new Client();
             boolean valida = obj.login(chavePublica, remote_client);
-            System.out.println("depois");
+            
             if (valida) {
                 //Registado e evolui para menu 2
                 return 2;
@@ -205,9 +202,16 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             String fpk = "pk.txt";
             BufferedReader br = null;
             FileReader fr = null;
-            fr = new FileReader(fpk);
-            br = new BufferedReader(fr);
-            String pk = br.readLine();
+            String pk = null;
+            try{
+                fr = new FileReader(fpk);
+                br = new BufferedReader(fr);
+                pk = br.readLine();
+            }
+            catch(Exception e){
+                System.out.println("Ainda não se encontra registado!");
+                return 1;
+            }
             br.close();
             fr.close();
             chavePublica = pk;
@@ -223,7 +227,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                 return 2;
             } else {
                 //Erro na assinutura do nonce
-                System.out.println("Erro no registo! Por favor tente novamente!");
+                System.out.println("Erro a efetuar o Login! Por favor tente novamente!");
                 return 3;
             }
 
@@ -245,8 +249,15 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        String menu2 = "***********************************\n1-Votar\n2-Status Eleição\n0-Sair\n-->";
+        
+        String menu2 = "\n\n\n"
+                     + "***********************************\n"
+                     + "*              Menu               *\n"
+                     + "*          1 - Votar              *\n"
+                     + "*          2 - Status da Eleição  *\n"
+                     + "*          0 - Sair               *\n"
+                     + "***********************************\n"
+                     + "Opção: ";
         int sair = 0;
         while (sair == 0) {
             System.out.print(menu2);
@@ -254,16 +265,15 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             int op = in.nextInt();
             switch (op) {
                 case 1: {
-                    
-                    System.out.println("Debug pk: " + chavePublica);
-                    
                     //Selecionamos a eleição
                     String eleicoes = obj.sendElectionsList();
                     if (eleicoes.equals("")){
                         System.out.println("Não existem eleições de momento!");
                         break;
                     }
-                    System.out.println("*********************************\nLista de Eleições\n");
+                    System.out.println("***********************************\n"
+                                     + "*        Lista de Eleições        *\n"
+                                     + "***********************************");
                     System.out.println(eleicoes);
                     
                     System.out.print("Selecionar eleição (ID): ");
@@ -282,7 +292,9 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         break;
                     }
 
-                    System.out.println("*********************************\nLista de Candidatos\n");
+                    System.out.println("***********************************\n"
+                                     + "*      Lista de Candidatos        *\n"
+                                     + "***********************************");
                     for (Nonce n : list_nonces) {
                         System.out.println("Nome: "+n.getNome()+" ID: "+n.getCandidate_id());
                     }
@@ -351,7 +363,17 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
             Server obj = (Server) registry.lookup("Server");    
             
-            String menu1 = "***********************************\n1-Login\n2-Registar\n0-Sair\n-->";
+            String menu1 = "***********************************\n"
+                         + "*             BitVote             *\n"
+                         + "***********************************\n"
+                         + "*                                 *\n"
+                         + "*              Menu               *\n"
+                         + "*          1 - Login              *\n"
+                         + "*          2 - Registar           *\n"
+                         + "*          0 - Sair               *\n"
+                         + "*                                 *\n"
+                         + "***********************************\n"
+                         + "Opção: ";
 
             int sair = 0;
             while (sair == 0) {
@@ -363,7 +385,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         int res = Login(obj);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
-                            System.out.println("Loginado!");
+                            System.out.println("Login efetuado com sucesso!");
                             menu2(obj);
                             sair = 1;
                         }
@@ -373,7 +395,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         int res = Registo(obj);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
-                            System.out.println("Registado!");
+                            System.out.println("Registo efetuado com sucesso!");
                             menu2(obj);
                             sair = 1;
                         }
@@ -390,7 +412,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                 }
             }
         } catch (Exception e) {
-            System.out.println("HelloClient exception: " + e.getMessage());
+            System.out.println("Erro na main do cliente: " + e.getMessage());
             e.printStackTrace();
         }
     }

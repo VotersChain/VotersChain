@@ -90,7 +90,7 @@ public class Connection extends Thread {
             }
 
         } catch (SocketException ex) {
-            System.out.println("Desliguei.me caraças");
+            System.out.println("Desliguei-me no connection!");
             Servidor.connections.remove(S);
 
             //remover oos
