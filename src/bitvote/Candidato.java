@@ -12,11 +12,21 @@ package bitvote;
 public class Candidato {
     private int id;
     private int total;
+    private String name;
     
-    public Candidato(int id, int total){
+    public Candidato(int id, int total,String name){
         this.id = id;
         this.total = total;
+        this.name = name;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    } 
 
     public int getId() {
         return id;

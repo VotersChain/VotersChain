@@ -24,7 +24,7 @@ public class VoteChain implements Serializable{
 	public VoteChain() throws Exception
 	{
 		blockchain = new ArrayList<Block>();
-		difficulty = 5;
+		difficulty = 6;
 		voteBase = new VotersWallet();
 		
 		//create genesis Vote, which sends 1 vote to all wallets:	
@@ -114,7 +114,7 @@ public class VoteChain implements Serializable{
 	public ArrayList<Candidato> contaVotos (int eleicao_id, int candidates, ArrayList<Nonce> nonces)
 	{
             ArrayList<Candidato> totalVotos = new ArrayList<Candidato>();
-            totalVotos.add(new Candidato(0, 0));
+            totalVotos.add(new Candidato(0, 0,""));
             
             for (Block item : blockchain) {
                     for (Vote v : item.getData()) {
@@ -127,7 +127,7 @@ public class VoteChain implements Serializable{
                                     Boolean exist = false;
                                     List <Candidato> cl = totalVotos.stream().filter(s -> nonce.getCandidate_id()== s.getId()).collect(Collectors.toList());
                                     if(cl.isEmpty()){
-                                        totalVotos.add(new Candidato(nonce.getCandidate_id(),0));
+                                        totalVotos.add(new Candidato(nonce.getCandidate_id(),0,nonce.getNome()));
                                     }
                                     //verificar se existe algum que nao preencha este caso e adicionar ao candidato 0 
                                     if(v.candidateNonce == nonce.getNonce_id() && v.sender.equals(nonce.getPk()) && nonce.getEleicao_id() == eleicao_id){
@@ -156,12 +156,7 @@ public class VoteChain implements Serializable{
 	public int verificaVotoDoCandidato(ArrayList<Nonce> array) {
                          if(array.isEmpty()){
                              return -1;
-                         }
-                         
-                         for (int i = 0; i < blockchain.size(); i++) {
-                            blockchain.get(i).ImprimeBlock(i);
-
-                        }
+                         }                         
                          
 		PublicKey pk = array.get(0).getPk();
 		int eleicao = array.get(0).getEleicao_id();
@@ -174,7 +169,7 @@ public class VoteChain implements Serializable{
 						return 0;
 					}
 					for (Nonce n : array) {
-                                                                            System.out.println("Debug conta votos -> "+n.getNonce_id()+" "+v.candidateNonce);
+
 						if (n.getNonce_id() == v.candidateNonce) {
 							return n.getCandidate_id();
 						}

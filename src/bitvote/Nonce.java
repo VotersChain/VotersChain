@@ -19,7 +19,7 @@ public class Nonce implements Serializable{
     private String nome;
     private int eleicao_id;
 
-    public Nonce(long nonce_id, PublicKey pk, int candidate_id, int eleicao_id) {
+    public Nonce(long nonce_id, PublicKey pk, int candidate_id, int eleicao_id, String nome) {
         this.nonce_id = nonce_id;
         this.pk = pk;
         this.candidate_id = candidate_id;

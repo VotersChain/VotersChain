@@ -178,7 +178,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         
         byte[] bNonce = "".getBytes();
         try {
+            client.Print("Executou o metodo remoto");
             bNonce = client.signNonce(String.valueOf(nonce));
+            System.out.println("Passou no cliente e remoto");
         } catch (RemoteException ex) {
             System.out.println("Login RemoteExcption on Client");
         }
@@ -334,6 +336,23 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         return electionsList;
     }
+    
+    
+    public ArrayList<Candidato> winerCount(ArrayList<Candidato> candidates){
+        ArrayList<Candidato> winner = new ArrayList<>();
+        int maior = candidates.get(0).getTotal();
+        winner.add(candidates.get(0));
+        for(int i=1;i<candidates.size();i++){
+            if(candidates.get(i).getTotal()==maior)
+                winner.add(candidates.get(i));
+            else if(candidates.get(i).getTotal()>maior){
+                winner.clear();
+                winner.add(candidates.get(i));
+                maior=candidates.get(i).getTotal();
+            }
+        }
+        return winner;
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -377,7 +396,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         //retorna o voto do votante
         //caso não tenha votado retorna ""
         SQLiteBD bd = new SQLiteBD();
-        PreparedStatement prstmt = bd.returnPrStmt("SELECT candidateid FROM Result WHERE electionid=?");
+        PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?");
         Statement stmt;
         int i = 0;
         try {
@@ -390,7 +409,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                 i++;
                 if (res2.next()) {
                     
-                    nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid));
+                    nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid,res.getString(2)));
                 } 
 
             }
@@ -400,8 +419,6 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             bd.closeBD();
         }
         
-        System.out.println("Debug Nonce List ->"+nonceList.size());
-        System.out.println("Debug Chain -> "+objBlockChain.getBlockchain().size());
         int candidateid = objBlockChain.verificaVotoDoCandidato(nonceList);
 
         if (candidateid == 0) {
@@ -426,6 +443,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         }
 
         // se as Eleições terminaram então retornar também os seu resultados
+        ArrayList<Candidato> candidates = new ArrayList<>();
         bd = new SQLiteBD();
         prstmt = bd.returnPrStmt("SELECT * FROM Election WHERE id=?;");
         try {
@@ -446,6 +464,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                         res2 = stmt.executeQuery("SELECT name FROM Candidate WHERE id=" + res.getInt(1) + ";");
                         if (res2.next()) {
                             sRes = sRes + res2.getString(1) + " ->" + res.getInt(3) + "\n";
+                            candidates.add(new Candidato(res.getInt(1),res.getInt(3),res2.getString(1)));
                         }
                     }
                 }
@@ -455,6 +474,18 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             bd.closeBD();
         }
         bd.closeBD();
+        
+        ArrayList<Candidato> winer = winerCount(candidates);
+        
+        if(winer.size()>1){
+            sRes = sRes + "\n*****************Empate*****************\n";
+            for(Candidato c : winer)
+                sRes = sRes + c.getName() +"/n";
+        }
+        else{
+           sRes = sRes + "\n****************Vencedor****************\n" + winer.get(0).getName();
+        }
+        
         return sRes;
     }
 
@@ -540,6 +571,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         Statement stmt = bd.returnStmt();
         ResultSet res, res2;
         ArrayList<Nonce> nonceList = new ArrayList<Nonce>();
+        ArrayList<Integer> ids = new ArrayList<>();
         PublicKey pk = null;
 
         System.out.println("------------Eleições a Decorrer------------");
@@ -547,6 +579,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         try {
             res = stmt.executeQuery("SELECT * FROM Election WHERE status=1;");
             while (res.next()) {
+                ids.add(res.getInt(1));
                 System.out.println("ID das Eleições: " + res.getInt(1));
                 System.out.println("Nome: " + res.getString(2));
                 System.out.println("-------------------------------------------");
@@ -562,7 +595,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         System.out.print("ID das Eleições a terminar:");
 
-        int electionid = Read.readIntInInterval(i + 1);
+        int electionid = 0;
+        while(true){
+            electionid = Read.readPositiveInt();
+            if(ids.contains(electionid))
+                break;
+        }
 
         bd = new SQLiteBD();
         stmt = bd.returnStmt();
@@ -594,9 +632,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                         Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         bd.closeBD();
                     }
-                    nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid));
+                    nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid,""));
                 }
             }
+            bd.closeBD();
 
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -611,7 +650,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
             //votos nulos
             if (c.getId() == 0) {
-                prstmt = bd.returnPrStmt("UPDATE ELECTION SET nullvotes=? WHERE electionid=?;");
+                prstmt = bd.returnPrStmt("UPDATE Election SET nullvotes=? WHERE id=?;");
                 try {
                     prstmt.setInt(1, c.getTotal());
                     prstmt.setInt(2, electionid);
@@ -624,7 +663,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             }
 
             //votos d0 candidato c
-            prstmt = bd.returnPrStmt("UPDATE RESULT SET votesnumber=? WHERE candidateid=?;");
+            prstmt = bd.returnPrStmt("UPDATE Result SET votesnumber=? WHERE candidateid=?;");
             try {
                 prstmt.setInt(1, c.getTotal());
                 prstmt.setInt(2, c.getId());
@@ -725,7 +764,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                         startElections();
                         break;
                     case 2:
-                        //endElection();
+                        endElection();
                         break;
                     case 0:
                         sair = 1;
