@@ -43,8 +43,8 @@ public class Client {
     private static final int PORT = 2019;
     private static String chavePublica;
     private static String chavePrivada;
-    //private static String Host = "DESKTOP-C38TKIF";
-    private static String Host = "localhost";
+    private static String Host = "DESKTOP-C38TKIF";
+    //private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
     // Édi - Asus-Pc
 
