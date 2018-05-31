@@ -298,8 +298,23 @@ public class Client {
                         System.out.println("Não existem eleições de momento!");
                         break;
                     }
-                    System.out.println("*********************************\nLista de Eleições\n");
+                    System.out.println("*********************************\n"
+                                     + "Lista de Eleições\n"
+                                     + "*********************************");
                     System.out.println(eleicoes);
+                    System.out.print("Eleição (ID): ");
+                    int id_eleicao = Read.readPositiveInt();
+                    String output = obj.statusOfElection(id_eleicao);
+                    
+                    //A eleição selecioanda não existe
+                    if(output.equals("")){
+                        System.out.println("A eleição indicada não existe, por favor tente novamente!");
+                        break;
+                    }
+                    
+                    System.out.println("****************************************\\");
+                    System.out.print("Estado do voto: ");
+                    System.out.println(output);
                 }
                 break;
                 case 0: {
