@@ -353,7 +353,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         try {
             System.setSecurityManager(new SecurityManager());
             Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
-            Server obj = (Server) registry.lookup("rmi://192.168.1.93/Server");
+            Server obj = (Server) registry.lookup("Server");
 
             String menu1 = "***********************************\n1-Login\n2-Registar\n0-Sair\n-->";
 
