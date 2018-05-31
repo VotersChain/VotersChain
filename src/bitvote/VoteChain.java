@@ -157,11 +157,19 @@ public class VoteChain implements Serializable{
                          if(array.isEmpty()){
                              return -1;
                          }
+                         
+                         for (int i = 0; i < blockchain.size(); i++) {
+                            blockchain.get(i).ImprimeBlock(i);
+
+                        }
+                         
 		PublicKey pk = array.get(0).getPk();
 		int eleicao = array.get(0).getEleicao_id();
 		for (Block item : blockchain) {
 			for (Vote v : item.getData()) {
+
 				if (v.sender.equals(pk) && v.id_eleicao == eleicao) {
+
 					if (v.candidateNonce == 0) {
 						return 0;
 					}

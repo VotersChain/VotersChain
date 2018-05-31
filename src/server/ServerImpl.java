@@ -264,7 +264,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         ResultSet res = null, res2;
         PublicKey pk = null;
         ArrayList<Nonce> nonceList = new ArrayList<>();
-
+        
+        
+        System.out.println("------> " +publickey);
+        
         //retorna o voto do votante
         //caso não tenha votado retorna ""
         SQLiteBD bd = new SQLiteBD();
@@ -555,13 +558,14 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     @Override
     public void atualizaBlockChain(VoteChain VC) {
         objBlockChain = VC;
+        
     }
 
     public static void main(String[] args) throws IOException {
 
         // Create and install a security manager
         if (System.getSecurityManager() == null) {
-            System.setSecurityManager(new RMISecurityManager());
+            System.setSecurityManager(new SecurityManager());
         }
 
         try {
@@ -571,7 +575,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             ServerImpl obj = new ServerImpl();
 
             // Bind this object instance to the name "HelloServer"
-            registry.bind("Server", obj);
+            registry.rebind("Server", obj);
+         
 
             System.out.println("Server bound in registry");
         } catch (Exception e) {

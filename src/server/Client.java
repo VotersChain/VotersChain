@@ -336,6 +336,7 @@ public class Client {
 
     public static void main(String[] args) {
         try {
+            System.setSecurityManager(new SecurityManager());
             Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
             Server obj = (Server) registry.lookup("Server");
 
