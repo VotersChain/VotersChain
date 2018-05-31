@@ -38,6 +38,7 @@ public class Cliente {
 
         //Votar no candidato x, com a carteira respetiva, id
         Vote v = wallet.sendVote(candidato_nonce, wallet.n_votes, id_eleicao); //testes
+        System.out.println("Debug Nonce do candidato: "+candidato_nonce);
 
         //indica ao servidor que vai mandar um objeto do tipo voto
         oos.writeObject("send-Voto");
