@@ -295,7 +295,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
             bd.closeBD();
         }
-
+        
+        System.out.println("Tamanho da Lista: "+nonceList.size());
         int candidateid = objBlockChain.verificaVotoDoCandidato(nonceList);
 
         if (candidateid == 0) {
