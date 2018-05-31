@@ -43,8 +43,8 @@ public class Client {
     private static final int PORT = 2019;
     private static String chavePublica;
     private static String chavePrivada;
-    private static String Host = "DESKTOP-C38TKIF";
-    //private static String Host = "localhost";
+    //private static String Host = "DESKTOP-C38TKIF";
+    private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
     // Édi - Asus-Pc
 
@@ -247,7 +247,10 @@ public class Client {
             Scanner in = new Scanner(System.in);
             int op = in.nextInt();
             switch (op) {
-                case 1: {                  
+                case 1: {
+                    
+                    System.out.println("Debug pk: " + chavePublica);
+                    
                     //Selecionamos a eleição
                     String eleicoes = obj.sendElectionsList();
                     if (eleicoes.equals("")){
@@ -285,8 +288,6 @@ public class Client {
                             flag = n.getNonce_id();
                         }
                     }
-                    
-                    System.out.println("\n\nNonce: "+flag);
                     
                     if(flag!=0){
                         cliente.makeVote(chavePrivada, chavePublica, flag, id_election);

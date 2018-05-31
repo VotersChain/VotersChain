@@ -88,7 +88,8 @@ public class Cliente {
                     if (ObjectType.equals("send-Voto")) {
                         System.out.println("Cliente: Recebe Voto");
                         voto = (Vote) ois.readObject();
-
+                        
+                        System.out.println("Debug Nonce Candidato: " + voto.candidateNonce);
                         //Verificar se o votante já votou
                         if ((BlockChain.nonMinedBlockhadVoted(voto.getSender(), lista_votos, voto.getId_eleicao()) == true) || (BlockChain.blockchainHadVoted(voto.getSender(), voto.getId_eleicao())==true) ) {
                             System.out.println("Já votou");
@@ -109,6 +110,10 @@ public class Cliente {
                                 lista_votos.clear();
 
                                 BlockChain.addBlock(bloco);
+                                
+                                //------------------------------------------
+                                System.out.println("Debug: ");
+                                bloco.ImprimeBlock(99);
 
                                 //Autoridade de confiança
                                 obj.atualizaBlockChain(BlockChain);
