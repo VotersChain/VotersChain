@@ -328,6 +328,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             res = prstmt.executeQuery();
             if (res.next()) {
                 if (res.getInt(4) == 1) {
+                    bd.closeBD();
                     return sRes;
                 } 
                 else {
