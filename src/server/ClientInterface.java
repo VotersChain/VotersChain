@@ -14,5 +14,5 @@ import java.rmi.RemoteException;
 public interface ClientInterface extends java.rmi.Remote {
     
     byte[] signNonce(String nonce) throws RemoteException;
-    
+    void Print(String mensagem) throws RemoteException;
 }

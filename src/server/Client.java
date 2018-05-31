@@ -9,7 +9,6 @@ import bitvote.AES;
 import bitvote.Nonce;
 import bitvote.SignatureUtils;
 import bitvote.StringUtils;
-import bitvote.VoteChain;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileInputStream;
@@ -43,6 +42,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     private static final int PORT = 2019;
     private static String chavePublica;
     private static String chavePrivada;
+    private static ClientInterface remote_client;
     private static String Host = "DESKTOP-C38TKIF";
     //private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
@@ -54,7 +54,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     
     @Override
     public byte[] signNonce(String nonce){
-        
+        System.out.println("Entrei SignNonce");
         try {
             return SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(chavePrivada));
         } catch (Exception ex) {
@@ -62,8 +62,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         }
         return "".getBytes();
     }
+    
+    public void Print(String mensagem){
+        System.out.println(mensagem);
+    }
 
-    public static int Registo(Server obj, ClientInterface remote_client) {
+    public static int Registo(Server obj) {
         try {
             //Pedir o Nome e o ID ao Utilizador
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -119,7 +123,10 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             fout.write(encoded);
             fout.close();
             
-            boolean valida = obj.login(pk, remote_client);
+            System.out.println("antes");
+            remote_client = new Client();
+            boolean valida = obj.login(chavePublica, remote_client);
+            System.out.println("depois");
             if (valida) {
                 //Registado e evolui para menu 2
                 return 2;
@@ -192,7 +199,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return pt;
     }
 
-    public static int Login(Server obj, ClientInterface remote_client) {
+    public static int Login(Server obj) {
         try {
             //Ler a pk do ficheiro
             String fpk = "pk.txt";
@@ -209,6 +216,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             String sk = getSK(obj);
             chavePrivada = sk;
 
+            remote_client = new Client();
             boolean valida = obj.login(pk, remote_client);
             if (valida) {
                 //Registado e evolui para menu 2
@@ -225,7 +233,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return 0;
     }
 
-    public static void menu2(Server obj, ClientInterface remote_client) throws NoSuchProviderException, InvalidKeySpecException, Exception {
+    public static void menu2(Server obj) throws NoSuchProviderException, InvalidKeySpecException, Exception {
         Cliente cliente = null;
         
         try {
@@ -261,6 +269,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     System.out.print("Selecionar eleição (ID): ");
                     int id_election = Read.readPositiveInt();
                     
+                    remote_client = new Client();
                     ArrayList<Nonce> list_nonces = obj.sendVotesList(id_election,chavePublica, remote_client);
                     
                     //Se vier vazia já votou
@@ -307,6 +316,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     System.out.println(eleicoes);
                     System.out.print("Eleição (ID): ");
                     int id_eleicao = Read.readPositiveInt();
+                    remote_client = new Client();
                     String output = obj.statusOfElection(id_eleicao, chavePublica, remote_client);
                     
                     //A eleição selecioanda não existe
@@ -339,9 +349,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         try {
             System.setSecurityManager(new SecurityManager());
             Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
-            Server obj = (Server) registry.lookup("Server");
-            
-            ClientInterface remote_client = new Client();
+            Server obj = (Server) registry.lookup("Server");    
             
             String menu1 = "***********************************\n1-Login\n2-Registar\n0-Sair\n-->";
 
@@ -352,21 +360,21 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                 int op = in.nextInt();
                 switch (op) {
                     case 1: {
-                        int res = Login(obj, remote_client);
+                        int res = Login(obj);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
                             System.out.println("Loginado!");
-                            menu2(obj, remote_client);
+                            menu2(obj);
                             sair = 1;
                         }
                     }
                     break;
                     case 2: {
-                        int res = Registo(obj,remote_client);
+                        int res = Registo(obj);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
                             System.out.println("Registado!");
-                            menu2(obj, remote_client);
+                            menu2(obj);
                             sair = 1;
                         }
                     }
