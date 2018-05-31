@@ -287,10 +287,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                         bd.closeBD();
                     }
                     nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid));
-                } else {
-                    bd.closeBD();
-                    return sRes;
-                }
+                } 
 
             }
             bd.closeBD();
@@ -304,6 +301,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         if (candidateid == 0) {
             sRes = "O seu voto nulo, foi aprovado!\n";
             return sRes;
+        }
+        else if(candidateid == -1){
+            sRes = "Não Votou, ou o seu voto ainda não foi aprovado!\n";
         }
 
         bd = new SQLiteBD();
