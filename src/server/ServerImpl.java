@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -36,8 +37,6 @@ import p2p.Servidor;
 public class ServerImpl extends UnicastRemoteObject implements Server {
 
     private static final int PORT = 2019;
-    private static long nonce;
-    private static String publickey;
     private static VoteChain objBlockChain;
 
     public ServerImpl() throws Exception {
@@ -47,6 +46,41 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     @Override
     public String sayHello() {
         return "Hello World!";
+    }
+    
+    
+    //0 se a chave publica não é válida
+    // nonce é gerado e retornado
+    private long criticalOperation(String pubkey){
+        
+        long nonce = StringUtils.generateNonce();
+        
+        //verifica se a chave publica existe na bd
+        SQLiteBD bd = new SQLiteBD();
+        String query = "SELECT * FROM User WHERE pubkey=?;";
+        PreparedStatement prstmt = bd.returnPrStmt(query);
+        ResultSet res = null;
+        try {
+            prstmt.setString(1, pubkey);
+            res = prstmt.executeQuery();
+            
+            //se a chave esta na base de dados 
+            if (res.next()) {
+                bd.closeBD();
+                return nonce;
+            }
+            //senao existe returnamos 0
+            else{
+                bd.closeBD();
+                return 0;
+            }
+
+        } catch (SQLException ex) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
+            bd.closeBD();
+        }
+        bd.closeBD();
+        return 0;
     }
 
     @Override
@@ -93,7 +127,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         return keys;
     }
 
-    @Override
+    /*@Override
     public String loginStepOne(String pubkey) {
         String stringNonce = "";
         publickey = pubkey;
@@ -123,27 +157,40 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         stringNonce = String.valueOf(nonce);
 
         return stringNonce;
-    }
+    }*/
 
     @Override
-    public Boolean loginStepTwo(byte[] signNonce) {
+    public Boolean login(String pubkey, ClientInterface client) {
 
         PublicKey pk = null;
+        
+        long nonce = criticalOperation(pubkey); 
+        if(nonce==0){
+            return false;
+        }
+        
+        
         try {
-            pk = StringUtils.getPublicKeyFromString(publickey);
+            pk = StringUtils.getPublicKeyFromString(pubkey);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
+        }
+        
+        byte[] bNonce = "".getBytes();
+        try {
+            bNonce = client.signNonce(String.valueOf(nonce));
+        } catch (RemoteException ex) {
+            System.out.println("Login RemoteExcption on Client");
         }
 
         boolean isLoged = false;
         try {
             // verifica o nonce assinado
-            isLoged = SignatureUtils.verifyString(String.valueOf(nonce), signNonce, pk);
+            isLoged = SignatureUtils.verifyString(String.valueOf(nonce), bNonce, pk);
         } catch (Exception ex1) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex1);
         }
         
-        System.out.println("Debug pk ->"+publickey);
         return isLoged;
 
     }
@@ -177,8 +224,38 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public ArrayList<Nonce> sendVotesList(int electionid) {
+    public ArrayList<Nonce> sendVotesList(int electionid,String pubkey, ClientInterface client) {
+        
+        //operação critica o utiliazador tera de provar que possui a chave privada para a chave publica dada
+        //caso não se verifique retorna null
+        PublicKey pk = null;
+        long nonce = criticalOperation(pubkey);
+        if (nonce == 0) {
+            return null;
+        }
 
+        try {
+            pk = StringUtils.getPublicKeyFromString(pubkey);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        byte[] bNonce = "".getBytes();
+        try {
+            bNonce = client.signNonce(String.valueOf(nonce));
+        } catch (RemoteException ex) {
+            System.out.println("sendVoteList RemoteExcption on Client");
+        }
+
+        try {
+            // verifica o nonce assinado
+            if(!SignatureUtils.verifyString(String.valueOf(nonce), bNonce, pk))
+                return null;
+        } catch (Exception ex1) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex1);
+        }
+        ///////////////////////////////////////////////
+        
         ArrayList<Nonce> votesList = new ArrayList<>();
         long lnonce;
         //gera um nonce para cada candidato
@@ -211,7 +288,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                 lnonce = StringUtils.generateNonce();
                 res2 = stmt.executeQuery("SELECT * FROM Candidate WHERE id=" + res.getInt(1));
 
-                if (objBlockChain.blockchainHadVoted(StringUtils.getPublicKeyFromString(publickey), electionid)) {
+                if (objBlockChain.blockchainHadVoted(StringUtils.getPublicKeyFromString(pubkey), electionid)) {
                     bd.closeBD();
                     return votesList;
                 }
@@ -223,7 +300,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                 }
                 stmt.close();
                 stmt = bd.returnStmt();
-                stmt.executeUpdate("Insert Into Nonce(id,candidateid,pubkey) VALUES(" + lnonce + "," + res.getInt(1) + ",'" + publickey + "');");
+                stmt.executeUpdate("Insert Into Nonce(id,candidateid,pubkey) VALUES(" + lnonce + "," + res.getInt(1) + ",'" + pubkey + "');");
             }
             bd.closeBD();
            
@@ -260,14 +337,42 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public String statusOfElection(int electionid) {
+    public String statusOfElection(int electionid,String pubkey, ClientInterface client) {
+        
+        //operação critica o utiliazador tera de provar que possui a chave privada para a chave publica dada
+        //caso não se verifique retorna null
+        PublicKey pk = null;
+        long nonce = criticalOperation(pubkey);
+        if (nonce == 0) {
+            return null;
+        }
+
+        try {
+            pk = StringUtils.getPublicKeyFromString(pubkey);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+
+        byte[] bNonce = "".getBytes();
+        try {
+            bNonce = client.signNonce(String.valueOf(nonce));
+        } catch (RemoteException ex) {
+            System.out.println("sendVoteList RemoteExcption on Client");
+        }
+
+        try {
+            // verifica o nonce assinado
+            if (!SignatureUtils.verifyString(String.valueOf(nonce), bNonce, pk)) {
+                return null;
+            }
+        } catch (Exception ex1) {
+            Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex1);
+        }
+        ///////////////////////////////////////////////
+        
         String sRes = "";
         ResultSet res = null, res2;
-        PublicKey pk = null;
         ArrayList<Nonce> nonceList = new ArrayList<>();
-        
-        
-        System.out.println("------> " +publickey);
         
         //retorna o voto do votante
         //caso não tenha votado retorna ""
@@ -281,15 +386,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             while (res.next()) {
 
                 stmt = bd.returnStmt();
-                res2 = stmt.executeQuery("SELECT * FROM Nonce WHERE candidateid=" + res.getInt(1) + " AND pubkey='" + publickey + "';");  //////////// And pubkey se res2
+                res2 = stmt.executeQuery("SELECT * FROM Nonce WHERE candidateid=" + res.getInt(1) + " AND pubkey='" + pubkey + "';");  //////////// And pubkey se res2
                 i++;
                 if (res2.next()) {
-                    try {
-                        pk = StringUtils.getPublicKeyFromString(publickey);
-                    } catch (Exception ex) {
-                        Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                        bd.closeBD();
-                    }
+                    
                     nonceList.add(new Nonce(res2.getLong(1), pk, res2.getInt(2), electionid));
                 } 
 

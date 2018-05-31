@@ -38,7 +38,7 @@ import p2p.Cliente;
  *
  * @author jferr
  */
-public class Client {
+public class Client extends java.rmi.server.UnicastRemoteObject implements ClientInterface{
 
     private static final int PORT = 2019;
     private static String chavePublica;
@@ -47,6 +47,21 @@ public class Client {
     //private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
     // Édi - Asus-Pc
+    
+    public Client() throws RemoteException {
+        super();
+    }
+    
+    @Override
+    public byte[] signNonce(String nonce){
+        
+        try {
+            return SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(chavePrivada));
+        } catch (Exception ex) {
+            Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return "".getBytes();
+    }
 
     public static int Registo(Server obj) {
         try {

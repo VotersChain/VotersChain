@@ -17,13 +17,12 @@ import java.util.ArrayList;
 public interface Server extends Remote{
     String sayHello() throws RemoteException;
     String regist(String name,long idNumber) throws RemoteException;
-    String loginStepOne(String pubkey) throws RemoteException;
-    Boolean loginStepTwo(byte[] signNonce) throws RemoteException;
+    Boolean login(String pubkey, ClientInterface client) throws RemoteException;
     String requestKey() throws RemoteException;
     String sendElectionsList() throws RemoteException;
     String sendAllElectionsList() throws RemoteException;
-    ArrayList<Nonce> sendVotesList(int electionid) throws RemoteException;
-    String statusOfElection(int electionid)  throws RemoteException;
+    ArrayList<Nonce> sendVotesList(int electionid,String pubkey, ClientInterface client) throws RemoteException;
+    String statusOfElection(int electionid,String pubkey, ClientInterface client)  throws RemoteException;
     
     VoteChain getBlockChain() throws RemoteException;
     void atualizaBlockChain( VoteChain VC) throws RemoteException;
