@@ -166,6 +166,7 @@ public class VoteChain implements Serializable{
 						return 0;
 					}
 					for (Nonce n : array) {
+                                                                            System.out.println("Debug conta votos -> "+n.getNonce_id()+" "+v.candidateNonce);
 						if (n.getNonce_id() == v.candidateNonce) {
 							return n.getCandidate_id();
 						}
