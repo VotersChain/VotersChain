@@ -676,7 +676,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             ServerImpl obj = new ServerImpl();
 
             // Bind this object instance to the name "HelloServer"
-            registry.rebind("rmi://192.168.1.93/Server", obj);
+            registry.rebind("Server", obj);
          
 
             System.out.println("Server bound in registry");
