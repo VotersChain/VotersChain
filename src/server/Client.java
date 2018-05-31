@@ -285,6 +285,9 @@ public class Client {
                             flag = n.getNonce_id();
                         }
                     }
+                    
+                    System.out.println("\n\nNonce: "+flag);
+                    
                     if(flag!=0){
                         cliente.makeVote(chavePrivada, chavePublica, flag, id_election);
                     }
