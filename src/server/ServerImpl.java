@@ -312,7 +312,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         try {
             res = stmt.executeQuery("SELECT name FROM Candidate WHERE id=" + candidateid + ";");
             if (res.next()) {
-                sRes = "O seu voto no Candidato " + res.getString(2) + ", foi aprovado!\n";
+                sRes = "O seu voto no Candidato " + res.getString(1) + ", foi aprovado!\n";
             }
             bd.closeBD();
         } catch (SQLException e) {
@@ -338,7 +338,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                     res = prstmt.executeQuery();
                     while (res.next()) {
                         stmt = bd.returnStmt();
-                        res2 = stmt.executeQuery("SELECT name FROM Nonce WHERE candidateid=" + res.getInt(1) + ";");
+                        res2 = stmt.executeQuery("SELECT name FROM Candidate WHERE id=" + res.getInt(1) + ";");
                         if (res2.next()) {
                             sRes = sRes + res2.getString(1) + " ->" + res.getInt(3) + "\n";
                         }
