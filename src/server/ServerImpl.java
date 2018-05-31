@@ -35,8 +35,8 @@ import p2p.Servidor;
 public class ServerImpl extends UnicastRemoteObject implements Server {
 
     private static final int PORT = 2019;
-    private static long nonce;
-    private static String publickey;
+    private long nonce;
+    private String publickey;
     private static VoteChain objBlockChain;
 
     public ServerImpl() throws Exception {
@@ -141,7 +141,8 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         } catch (Exception ex1) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex1);
         }
-
+        
+        System.out.println("Debug pk ->"+publickey);
         return isLoged;
 
     }
@@ -211,7 +212,6 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
                 if (objBlockChain.blockchainHadVoted(StringUtils.getPublicKeyFromString(publickey), electionid)) {
                     bd.closeBD();
-                    System.out.println("//////////////////////////////////////////////////////////////");
                     return votesList;
                 }
 
@@ -281,7 +281,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                 i++;
                 if (res2.next()) {
                     try {
-                        pk = StringUtils.getPublicKeyFromString(res2.getString(3));
+                        pk = StringUtils.getPublicKeyFromString(publickey);
                     } catch (Exception ex) {
                         Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         bd.closeBD();
@@ -296,6 +296,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
             bd.closeBD();
         }
         
+        System.out.println("Debug Nonce List ->"+nonceList.size());
         System.out.println("Debug Chain -> "+objBlockChain.getBlockchain().size());
         int candidateid = objBlockChain.verificaVotoDoCandidato(nonceList);
 
