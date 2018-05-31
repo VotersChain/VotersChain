@@ -63,7 +63,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return "".getBytes();
     }
 
-    public static int Registo(Server obj) {
+    public static int Registo(Server obj, ClientInterface remote_client) {
         try {
             //Pedir o Nome e o ID ao Utilizador
             BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
@@ -119,18 +119,8 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             fout.write(encoded);
             fout.close();
             
-            //(Servidor -> Cliente ) nonce
-            String nonce = obj.loginStepOne(pk);
-
-            //(Cliente  -> Servidor) Assinar o nonce encia
-            byte[] signNonce = SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(sk));
-            System.out.println("PK: "+pk);
-            System.out.println("nonce "+nonce);
-            System.out.println("Valida: "+SignatureUtils.verifyString(nonce, signNonce, StringUtils.getPublicKeyFromString(chavePublica)));
-            //(Servidor -> Cliente ) Valida a assinatura
-            boolean isLoged = obj.loginStepTwo(signNonce);
-
-            if (isLoged) {
+            boolean valida = obj.login(pk, remote_client);
+            if (valida) {
                 //Registado e evolui para menu 2
                 return 2;
             } else {
@@ -202,7 +192,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return pt;
     }
 
-    public static int Login(Server obj) {
+    public static int Login(Server obj, ClientInterface remote_client) {
         try {
             //Ler a pk do ficheiro
             String fpk = "pk.txt";
@@ -215,19 +205,12 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             fr.close();
             chavePublica = pk;
 
-            //(Servidor -> Cliente ) nonce
-            String nonce = obj.loginStepOne(pk);
-
             //Ler o sk e decifrar
             String sk = getSK(obj);
             chavePrivada = sk;
 
-            //(Cliente  -> Servidor) Assinar o nonce encia
-            byte[] signNonce = SignatureUtils.signString(nonce, StringUtils.getPrivateKeyFromString(sk));
-
-            //(Servidor -> Cliente ) Valida a assinatura
-            boolean isLoged = obj.loginStepTwo(signNonce);
-            if (isLoged) {
+            boolean valida = obj.login(pk, remote_client);
+            if (valida) {
                 //Registado e evolui para menu 2
                 return 2;
             } else {
@@ -242,7 +225,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
         return 0;
     }
 
-    public static void menu2(Server obj) throws NoSuchProviderException, InvalidKeySpecException, Exception {
+    public static void menu2(Server obj, ClientInterface remote_client) throws NoSuchProviderException, InvalidKeySpecException, Exception {
         Cliente cliente = null;
         
         try {
@@ -278,7 +261,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     System.out.print("Selecionar eleição (ID): ");
                     int id_election = Read.readPositiveInt();
                     
-                    ArrayList<Nonce> list_nonces = obj.sendVotesList(id_election);
+                    ArrayList<Nonce> list_nonces = obj.sendVotesList(id_election,chavePublica, remote_client);
                     
                     //Se vier vazia já votou
                     if(list_nonces.isEmpty()){
@@ -286,7 +269,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         break;
                     }
                     if(list_nonces==null){
-                        System.out.println("Eleição não existe ou já terminou!");
+                        System.out.println("Eleição não existe, já terminou ou as suas credenciais! estão incorretas!");
                         break;
                     }
 
@@ -324,12 +307,15 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     System.out.println(eleicoes);
                     System.out.print("Eleição (ID): ");
                     int id_eleicao = Read.readPositiveInt();
-                    String output = obj.statusOfElection(id_eleicao);
+                    String output = obj.statusOfElection(id_eleicao, chavePublica, remote_client);
                     
                     //A eleição selecioanda não existe
                     if(output.equals("")){
                         System.out.println("A eleição indicada não existe, por favor tente novamente!");
                         break;
+                    }
+                    if(output==null){
+                        System.out.println("As suas credenciais não são válidas!");
                     }
                     
                     System.out.println("****************************************\\");
@@ -355,7 +341,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             Registry registry = LocateRegistry.getRegistry(Host, PORT, new RMISSLClientSocketFactory());
             Server obj = (Server) registry.lookup("Server");
             
-            ClientInterface client = new Client();
+            ClientInterface remote_client = new Client();
             
             String menu1 = "***********************************\n1-Login\n2-Registar\n0-Sair\n-->";
 
@@ -366,21 +352,21 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                 int op = in.nextInt();
                 switch (op) {
                     case 1: {
-                        int res = Login(obj);
+                        int res = Login(obj, remote_client);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
                             System.out.println("Loginado!");
-                            menu2(obj);
+                            menu2(obj, remote_client);
                             sair = 1;
                         }
                     }
                     break;
                     case 2: {
-                        int res = Registo(obj);
+                        int res = Registo(obj,remote_client);
                         if (res == 2) {
                             //Registado - Passar ao menu 2
                             System.out.println("Registado!");
-                            menu2(obj);
+                            menu2(obj, remote_client);
                             sair = 1;
                         }
                     }
