@@ -24,7 +24,7 @@ public class VoteChain implements Serializable{
 	public VoteChain() throws Exception
 	{
 		blockchain = new ArrayList<Block>();
-		difficulty = 7;
+		difficulty = 6;
 		voteBase = new VotersWallet();
 		
 		//create genesis Vote, which sends 1 vote to all wallets:	
