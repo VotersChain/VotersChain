@@ -43,8 +43,8 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     private static String chavePublica;
     private static String chavePrivada;
     private static ClientInterface remote_client;
-    private static String Host = "DESKTOP-C38TKIF";
-    //private static String Host = "localhost";
+    //private static String Host = "DESKTOP-C38TKIF";
+    private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
     // Édi - Asus-Pc
     
@@ -250,7 +250,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        String menu2 = "\n\n\n"
+        String menu2 = "\n\n"
                      + "***********************************\n"
                      + "*              Menu               *\n"
                      + "*          1 - Votar              *\n"
