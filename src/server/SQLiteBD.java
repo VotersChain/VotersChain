@@ -46,10 +46,12 @@ public class SQLiteBD {
     private PreparedStatement prstmt;
     private byte[] key; 
     private byte[] iv;
+    public static int flag = 0;
     
     
     //construtor vazio
     public SQLiteBD(){
+        flag = flag + 1;
         File fBD = new File("BitVote.db");
         if (fBD.exists()) {
             encryptionDB('d');
@@ -105,7 +107,10 @@ public class SQLiteBD {
             }
 
             c.close();
-            encryptionDB('e');
+            flag = flag -1;
+            if(flag==0){
+                encryptionDB('e');
+            }
         }
         catch(SQLException e){
             encryptionDB('e');
