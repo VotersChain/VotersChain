@@ -140,14 +140,9 @@ public class Cliente {
 
                         //Recebo a BlockChain 
                         getBLOCKCHAIN = (VoteChain) ois.readObject();
-                        System.out.println("Recebi Blockchain 1");
                         //Valida a BlockChain
                         if (getBLOCKCHAIN.isChainValid() == true) {
-                            System.out.println("Recebi Blockchain 2");
-                            System.out.println("Interna: " + BlockChain.getBlockchain().size() + "Recebida Blockchain size = " + getBLOCKCHAIN.getBlockchain().size());
                             if (BlockChain.getBlockchain().size() < getBLOCKCHAIN.getBlockchain().size()) {
-                                System.out.println("Recebi Blockchain 3");
-                                System.out.println("Atualizei");
 
                                 //Se a blockchain recebida for válida substituir a atual
                                 BlockChain = getBLOCKCHAIN;
