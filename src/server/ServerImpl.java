@@ -154,6 +154,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         return stringNonce;
     }*/
+    
     @Override
     public Boolean login(String pubkey, ClientInterface client) {
 
@@ -172,7 +173,6 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         byte[] bNonce = "".getBytes();
         try {
-            client.Print("Executou o metodo remoto");
             bNonce = client.signNonce(String.valueOf(nonce));
             System.out.println("Passou no cliente e remoto");
         } catch (RemoteException ex) {
@@ -256,6 +256,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         ArrayList<Nonce> votesList = new ArrayList<>();
         long lnonce;
+        
         //gera um nonce para cada candidato
         SQLiteBD bd = new SQLiteBD();
         ResultSet res;
@@ -390,7 +391,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         //retorna o voto do votante
         //caso não tenha votado retorna ""
         SQLiteBD bd = new SQLiteBD();
-        PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?");
+        PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?"); 
         Statement stmt;
         int i = 0;
         try {
@@ -408,6 +409,9 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
             }
             bd.closeBD();
+            if(i==0){
+                return sRes;
+            }
         } catch (SQLException ex) {
             Logger.getLogger(ServerImpl.class.getName()).log(Level.SEVERE, null, ex);
             bd.closeBD();

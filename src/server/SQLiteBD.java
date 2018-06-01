@@ -31,6 +31,7 @@ import java.util.Base64;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.xml.bind.DatatypeConverter;
 import org.bouncycastle.util.encoders.Hex;
 
@@ -189,6 +190,20 @@ public class SQLiteBD {
         
     }
     
+    private static boolean isBase64(String stringBase64) {
+        String regex
+                = "([A-Za-z0-9+/]{4})*"
+                + "([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)";
+
+        Pattern patron = Pattern.compile(regex);
+
+        if (!patron.matcher(stringBase64).matches()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     private void encryptionDB(char c){
         
         String outString="";
@@ -216,6 +231,10 @@ public class SQLiteBD {
         
         if(c=='e'){
             try {
+                if(isBase64(outString)){
+                    return;
+                }
+                
                 iv = AES.generateIV();
                 FileOutputStream fout = new FileOutputStream("iv.txt");
                 String ivHex = DatatypeConverter.printHexBinary(iv);
@@ -224,7 +243,8 @@ public class SQLiteBD {
                 byte[] cripto = AES.encrypt(outString, key, iv);
                 
                 fout = new FileOutputStream("BitVote.db");
-                byte[] encoded = Base64.getEncoder().encode(cripto);
+                
+                byte[] encoded = Base64.getEncoder().encode(cripto);               
                 fout.write(encoded);
                 fout.close();
             } catch (Exception ex) {
@@ -233,6 +253,10 @@ public class SQLiteBD {
         }
         if(c=='d'){
             try {
+                if(!isBase64(outString)){
+                    return;
+                }
+                
                 String ivString = "";
                 try {
                     FileReader filer = new FileReader("iv.txt");

@@ -70,6 +70,19 @@ public class Read {
         }
     }
     
+    public static int readVotesInt() {
+        while (true) {
+            try {
+                String n = readString().trim();
+                if(n.equals(""))
+                    return 0;
+                return Integer.parseInt(n);
+            } catch (NumberFormatException e) {
+                System.out.println("Número fora do Intrevalo!!!");
+            }
+        }
+    }
+    
     public static int readCandidatesNumber() {
         while (true) {
             try {

@@ -282,15 +282,15 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     remote_client = new Client();
                     ArrayList<Nonce> list_nonces = obj.sendVotesList(id_election,chavePublica, remote_client);
                     
+                    if (list_nonces == null) {
+                        System.out.println("Eleição não existe, já terminou ou as suas credenciais! estão incorretas!");
+                        break;
+                    }
                     //Se vier vazia já votou
                     if(list_nonces.isEmpty()){
                         System.out.println("O seu voto já foi efetuado para a eleição selecionada! Por favor, aguarde pelo resultdo.");
                         break;
-                    }
-                    if(list_nonces==null){
-                        System.out.println("Eleição não existe, já terminou ou as suas credenciais! estão incorretas!");
-                        break;
-                    }
+                    }               
 
                     System.out.println("***********************************\n"
                                      + "*      Lista de Candidatos        *\n"
@@ -299,7 +299,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                         System.out.println("Nome: "+n.getNome()+" ID: "+n.getCandidate_id());
                     }
                     System.out.print("Votar no Candidato (ID): ");
-                    int candidato = Read.readPositiveInt();
+                    int candidato = Read.readVotesInt();
                     
                     long flag = 0; //verifica se o id escolhido corresponde a um dos candidatos
                     for (Nonce n : list_nonces) {
