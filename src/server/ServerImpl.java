@@ -481,7 +481,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
                     sRes = sRes + c.getName() + "\n";
                 }
             } else {
-                sRes = sRes + "\n***********************************\nVencedor***********************************\n" + winer.get(0).getName();
+                sRes = sRes + "\n***********************************\nVencedor\n***********************************\n" + winer.get(0).getName();
             }
         }
 

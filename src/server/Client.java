@@ -284,7 +284,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
                     ArrayList<Nonce> list_nonces = obj.sendVotesList(id_election,chavePublica, remote_client);
                     
                     if (list_nonces == null) {
-                        System.out.println("Eleição não existe, já terminou ou as suas credenciais! estão incorretas!");
+                        System.out.println("Eleição não existe, já terminou ou as suas credenciais estão incorretas!");
                         break;
                     }
                     //Se vier vazia já votou
