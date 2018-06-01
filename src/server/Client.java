@@ -44,7 +44,7 @@ public class Client extends java.rmi.server.UnicastRemoteObject implements Clien
     private static String chavePrivada;
     private static ClientInterface remote_client;
     //private static String Host = "DESKTOP-C38TKIF";
-    private static String Host = "192.168.1.100";
+    private static String Host = "169.254.86.162";
     //private static String Host = "localhost";
     // Pascoal - DESKTOP-C38TKIF
     // Édi - Asus-Pc
