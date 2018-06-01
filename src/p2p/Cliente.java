@@ -31,7 +31,7 @@ public class Cliente {
 
     private ObjectOutputStream oos;
     private VoteChain BlockChain;
-    private int FLAG_MINING = 2;
+    private int FLAG_MINING = 4;
 
     public void makeVote(String sk, String pk, long candidato_nonce, int id_eleicao) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, Exception {
         // Cria uma carteira
