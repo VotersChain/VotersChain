@@ -36,6 +36,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     private static final int PORT = 2019;
     private static VoteChain objBlockChain;
+    private SQLiteBD bd;
 
     public ServerImpl() throws Exception {
         super(PORT, new RMISSLClientSocketFactory(), new RMISSLServerSocketFactory());
@@ -48,12 +49,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     //0 se a chave publica não é válida
     // nonce é gerado e retornado
-    private long criticalOperation(String pubkey) {
+    private synchronized long criticalOperation(String pubkey) {
 
         long nonce = StringUtils.generateNonce();
 
         //verifica se a chave publica existe na bd
-        SQLiteBD bd = new SQLiteBD();
+        bd = new SQLiteBD();
         String query = "SELECT * FROM User WHERE pubkey=?;";
         PreparedStatement prstmt = bd.returnPrStmt(query);
         ResultSet res = null;
@@ -81,12 +82,12 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     @Override
     //Registo dos votantes
-    public String regist(String name, long idNumber) {
+    public synchronized String regist(String name, long idNumber) {
 
         String keys = "";
 
         //Se já está registado retorna ""
-        SQLiteBD bd = new SQLiteBD();
+        bd = new SQLiteBD();
         String query = "SELECT * FROM User WHERE idnumber=?;";
         PreparedStatement prstmt = bd.returnPrStmt(query);
         ResultSet res = null;
@@ -156,7 +157,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     }*/
     
     @Override
-    public Boolean login(String pubkey, ClientInterface client) {
+    public synchronized Boolean login(String pubkey, ClientInterface client) {
 
         PublicKey pk = null;
 
@@ -197,10 +198,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public String sendElectionsList() {
+    public synchronized String sendElectionsList() {
 
         String electionsList = "";
-        SQLiteBD bd = new SQLiteBD();
+        bd = new SQLiteBD();
         Statement stmt = bd.returnStmt();
         ResultSet res;
         try {
@@ -221,7 +222,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public ArrayList<Nonce> sendVotesList(int electionid, String pubkey, ClientInterface client) {
+    public synchronized ArrayList<Nonce> sendVotesList(int electionid, String pubkey, ClientInterface client) {
 
         //operação critica o utiliazador tera de provar que possui a chave privada para a chave publica dada
         //caso não se verifique retorna null
@@ -258,7 +259,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         long lnonce;
         
         //gera um nonce para cada candidato
-        SQLiteBD bd = new SQLiteBD();
+        bd = new SQLiteBD();
         ResultSet res;
         ResultSet res2;
         Statement stmt = bd.returnStmt();
@@ -310,10 +311,10 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
     }
 
     @Override
-    public String sendAllElectionsList() {
+    public synchronized String sendAllElectionsList() {
 
         String electionsList = "";
-        SQLiteBD bd = new SQLiteBD();
+        bd = new SQLiteBD();
         Statement stmt = bd.returnStmt();
         ResultSet res;
         try {
@@ -351,7 +352,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     @Override
-    public String statusOfElection(int electionid, String pubkey, ClientInterface client) {
+    public synchronized String statusOfElection(int electionid, String pubkey, ClientInterface client) {
 
         //operação critica o utiliazador tera de provar que possui a chave privada para a chave publica dada
         //caso não se verifique retorna null
@@ -390,7 +391,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         //retorna o voto do votante
         //caso não tenha votado retorna ""
-        SQLiteBD bd = new SQLiteBD();
+        bd = new SQLiteBD();
         PreparedStatement prstmt = bd.returnPrStmt("SELECT * FROM Result WHERE electionid=?"); 
         Statement stmt;
         int i = 0;
@@ -421,7 +422,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
         if (candidateid == 0) {
             sRes = "O seu voto nulo, foi aprovado!\n";
-            return sRes;
+            
         } else if (candidateid == -1) {
             sRes = "Status: Não Votou, ou o seu voto ainda não foi aprovado!\n";
         }
@@ -567,7 +568,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
 
     private static void endElection() {
 
-        SQLiteBD bd = new SQLiteBD();
+       SQLiteBD bd = new SQLiteBD();
         PreparedStatement prstmt = null;
 
         Statement stmt = bd.returnStmt();
@@ -731,7 +732,7 @@ public class ServerImpl extends UnicastRemoteObject implements Server {
         //Criar bd se não existir
         File fBD = new File("BitVote.db");
         if (!fBD.exists()) {
-            SQLiteBD bd = new SQLiteBD();
+           SQLiteBD bd = new SQLiteBD();
             bd.createBD();
         }
 
